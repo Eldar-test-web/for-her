@@ -28,17 +28,11 @@
 <div id="intro-veil" aria-hidden="true"></div>
 <div id="loader" aria-hidden="true"><p class="loader-mark">for you</p><p class="loader-sub">look closer</p></div>
 
-<div class="sound-wrap">
-  <button id="sound-btn" aria-pressed="false" aria-label="Toggle ambient sound">
-    <span class="sound-line"></span><span class="sound-line"></span><span class="sound-line"></span>
-    <span id="sound-label">sound off</span>
-  </button>
-</div>
-
 <main id="main">
 <!-- 00 -->
 <header id="beginning" class="hero">
   <p class="eyebrow reveal">for one person.</p>
+  <svg class="bloom bloom-hero" viewBox="-200 -200 400 400" aria-hidden="true"><g class="bloom-rings"></g></svg>
   <div class="heart-stage" id="heart-stage">
     <canvas id="heart-canvas" aria-label="A heart formed entirely from the words I love you, turning slowly in darkness."></canvas>
     <div class="heart-fallback" hidden>
@@ -89,6 +83,7 @@
 </section>
 
 <!-- 06 -->
+<div class="orn" aria-hidden="true"><svg viewBox="-200 -200 400 400" class="orn-bloom"><g class="bloom-rings"></g></svg></div>
 <section class="chapter" id="gift" aria-label="A little something">
   <p class="chap-mark">06 — A Little Something</p>
   <h2 class="serif reveal-line">There was still one thing<br /><em>I wanted to give you.</em></h2>
@@ -150,6 +145,7 @@
 </section>
 
 <!-- 10 -->
+<div class="orn" aria-hidden="true"><svg viewBox="-200 -200 400 400" class="orn-bloom"><g class="bloom-rings"></g></svg></div>
 <section class="chapter" id="before-you-go" aria-label="Before you go">
   <p class="chap-mark">10 — Before You Go</p>
   <h2 class="serif reveal-line">Before you go.</h2>
@@ -170,7 +166,9 @@
 <!-- 11 -->
 <section id="finale" aria-label="I love you">
   <p class="chap-mark">11 — I Love You</p>
-  <div class="finale-stage"><canvas id="heart-final" aria-label="The heart of words, seen close"></canvas></div>
+  <div class="finale-stage">
+  <svg class="bloom bloom-fin" viewBox="-200 -200 400 400" aria-hidden="true"><g class="bloom-rings"></g></svg>
+  <canvas id="heart-final" aria-label="The heart of words, seen close"></canvas></div>
   <p class="finale-sub">Even here, my eyes would still find you.</p>
   <p class="colophon">made quietly, for you — <span id="year"></span> · <a href="#beginning" id="to-top">back to the beginning</a></p>
 </section>
