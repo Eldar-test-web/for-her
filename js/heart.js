@@ -1,42 +1,43 @@
 import * as THREE from 'three';
 
+/* The heart is ONLY text. No mesh, no silhouette, no glow sprite.
+   Remove every Points/InstancedMesh below and nothing heart-shaped remains. */
+
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isMobile = matchMedia('(max-width: 640px)').matches;
 
-function textTexture(word, { px=64, color='#F2ECE6', glow='rgba(201,180,154,.55)', font='600 44px Georgia, serif', w=512, h=128 }={}){
-  const c=document.createElement('canvas'); c.width=w; c.height=h;
-  const g=c.getContext('2d');
-  g.clearRect(0,0,w,h);
-  g.font=font; g.textAlign='center'; g.textBaseline='middle';
-  g.shadowColor=glow; g.shadowBlur=14;
-  g.fillStyle=color;
-  g.fillText(word, w/2, h/2+2);
-  const t=new THREE.CanvasTexture(c);
-  t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
-  return t;
-}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
-// parametric 2D heart outline, then volumised
-function heartSamples(count){
-  const outline=[];
-  const M=420;
-  for(let i=0;i<M;i++){
-    const t=(i/M)*Math.PI*2;
-    const x=16*Math.pow(Math.sin(t),3);
-    const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
-    outline.push([x,y]);
-  }
-  const pts=[];
-  for(let i=0;i<count;i++){
-    const o=outline[(Math.random()*M)|0];
-    const inward=Math.pow(Math.random(),0.6); // bias to surface, some fill
-    const cx=o[0]*(1-inward*0.92), cy=o[1]*(1-inward*0.92);
-    const jx=(Math.random()-.5)*1.1, jy=(Math.random()-.5)*1.1;
-    const edge=Math.min(1,Math.hypot(cx,cy)/17);
-    const z=(Math.random()-.5)*7*(1-edge*0.55);
-    pts.push([ (cx+jx)*0.32, (cy+jy)*0.32, z*0.32 ]);
+// Taubin-style implicit heart: elegant lobes, valley, tapered base
+function F(x,y,z){ const a=x*x+2.25*y*y+z*z-1; return a*a*a - x*x*z*z*z - 0.1125*y*y*z*z*z; }
+function gradN(x,y,z){
+  const e=0.0015;
+  const gx=F(x+e,y,z)-F(x-e,y,z), gy=F(x,y+e,z)-F(x,y-e,z), gz=F(x,y,z+e)-F(x,y,z-e);
+  const l=Math.hypot(gx,gy,gz)||1;
+  return [gx/l,gy/l,gz/l];
+}
+function sampleSurface(n, rand){
+  const pts=[]; let guard=0;
+  while(pts.length<n && guard<n*500){
+    guard++;
+    const x=(rand()*2-1)*1.6, y=(rand()*2-1)*1.75-0.08, z=(rand()*2-1)*1.3;
+    if(Math.abs(F(x,y,z))<0.05) pts.push({p:[x,y,z], n:gradN(x,y,z)});
   }
   return pts;
+}
+
+function wordTexture(word, px=88){
+  const c=document.createElement('canvas'); c.width=1024; c.height=192;
+  const g=c.getContext('2d');
+  g.clearRect(0,0,1024,192);
+  g.font=`500 ${px}px Georgia, 'Times New Roman', serif`;
+  g.textAlign='center'; g.textBaseline='middle';
+  try{ g.letterSpacing='6px'; }catch(e){}
+  g.fillStyle='#ffffff';
+  g.fillText(word,512,100);
+  const t=new THREE.CanvasTexture(c);
+  t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=8;
+  return t;
 }
 
 function webglOK(){
@@ -46,94 +47,109 @@ function webglOK(){
   }catch(e){return false}
 }
 
-function build(canvas, { finalMode=false, density=1 }={}){
+function build(canvas, { finalMode=false }={}){
+  const rand = mulberry32(finalMode? 77 : 7); // stable composition
   const renderer=new THREE.WebGLRenderer({canvas, alpha:true, antialias:true, powerPreference:'low-power'});
   renderer.setPixelRatio(Math.min(devicePixelRatio||1, isMobile?1.6:2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
+
   const scene=new THREE.Scene();
-  // warm fog for depth — dark room
-  scene.fog=new THREE.FogExp2(0x080708, 0.016);
-  const cam=new THREE.PerspectiveCamera(33,1,.1,200);
-  cam.position.set(0,0.4,finalMode?26:44);
+  const cam=new THREE.PerspectiveCamera(33,1,.1,100);
+  const Z_WIDE = finalMode? 8.2 : 8.6;
+  cam.position.set(0, 0.15, finalMode? 8.2 : 13.5); // opens far, then approaches
+
+  // cinematic warm lighting — illuminated, never glowing
+  scene.add(new THREE.AmbientLight(0x3a2530, 0.85));
+  const key=new THREE.DirectionalLight(0xffd9b0, 1.5); key.position.set(4,6,8); scene.add(key);
+  const rim=new THREE.DirectionalLight(0x9a5a64, 0.65); rim.position.set(-7,2,-6); scene.add(rim);
+  const low=new THREE.DirectionalLight(0x4a202b, 0.5); low.position.set(0,-6,3); scene.add(low);
 
   const group=new THREE.Group(); scene.add(group);
 
-  const total=Math.round((isMobile?520:1150)*density);
-  const samples=heartSamples(total);
-  const nSmall=Math.round(total*0.82);
+  const TOTAL = isMobile? 950 : 3400;
+  const samples=sampleSurface(TOTAL, rand);
+  // shuffle so word-kinds interleave organically
+  for(let i=samples.length-1;i>0;i--){const j=(rand()*(i+1))|0;[samples[i],samples[j]]=[samples[j],samples[i]];}
 
-  function cloud(indices, tex, size, opacity){
-    const pos=new Float32Array(indices.length*3);
-    const col=new Float32Array(indices.length*3);
-    const cFront=new THREE.Color(0xF2ECE6), cMid=new THREE.Color(0x8B4A58), cBack=new THREE.Color(0x4A202B);
-    const tmp=new THREE.Color();
-    indices.forEach((si,k)=>{
-      const [x,y,z]=samples[si];
-      pos[k*3]=x; pos[k*3+1]=y+0.4; pos[k*3+2]=z;
-      const f=THREE.MathUtils.clamp(z/2.4,-1,1);
-      if(f>=0) tmp.copy(cMid).lerp(cFront, 0.25+f*0.75);
-      else tmp.copy(cMid).lerp(cBack, -f*0.85);
-      // champagne accents: every ~9th word glows warmer
-      if(si%9===0) tmp.lerp(new THREE.Color(0xC9B49A), .45);
-      col[k*3]=tmp.r; col[k*3+1]=tmp.g; col[k*3+2]=tmp.b;
+  const texPhrase=wordTexture('I LOVE YOU', 84);
+  const texLove=wordTexture('LOVE', 104);
+  const texYou=wordTexture('YOU', 104);
+
+  const up=new THREE.Vector3(0,1,0), alt=new THREE.Vector3(1,0,0);
+  function fillMesh(geo, mat, list, w, h){
+    const m=new THREE.InstancedMesh(geo,mat,list.length);
+    const M=new THREE.Matrix4(), bx=new THREE.Vector3(), by=new THREE.Vector3(), bz=new THREE.Vector3();
+    const t1=new THREE.Vector3(), t2=new THREE.Vector3(), P=new THREE.Vector3();
+    const ivory=new THREE.Color(0xf3ece6), rose=new THREE.Color(0x9a6a70), champ=new THREE.Color(0xc8b399);
+    const cc=new THREE.Color();
+    list.forEach((s,k)=>{
+      bz.set(...s.n);
+      t1.crossVectors(Math.abs(bz.y)>0.93?alt:up, bz).normalize();
+      t2.crossVectors(bz,t1).normalize();
+      // flow around the form + small organic variance
+      const th=Math.atan2(s.p[1],s.p[0])*0.5 + (rand()-0.5)*0.55;
+      const c=Math.cos(th), si=Math.sin(th);
+      bx.copy(t1).multiplyScalar(c).addScaledVector(t2,si);
+      by.copy(t2).multiplyScalar(c).addScaledVector(t1,-si);
+      const sc=(0.8+rand()*0.45);
+      P.set(s.p[0]*1.5, s.p[1]*1.5, s.p[2]*1.5);
+      M.makeBasis(bx.multiplyScalar(w*sc), by.multiplyScalar(h*sc), bz);
+      M.setPosition(P);
+      m.setMatrixAt(k,M);
+      // front words catch light, back words fall into wine shadow
+      const f=THREE.MathUtils.clamp(s.n[2],-1,1);
+      if(f>=0) cc.copy(rose).lerp(ivory,0.35+f*0.65);
+      else cc.copy(rose).multiplyScalar(1+f*0.45);
+      if(k%9===0) cc.lerp(champ,0.5);
+      m.setColorAt(k,cc);
     });
-    const g=new THREE.BufferGeometry();
-    g.setAttribute('position',new THREE.BufferAttribute(pos,3));
-    g.setAttribute('color',new THREE.BufferAttribute(col,3));
-    const m=new THREE.PointsMaterial({
-      map:tex, size, transparent:true, opacity, vertexColors:true,
-      depthWrite:false, sizeAttenuation:true, alphaTest:0.02
-    });
-    const p=new THREE.Points(g,m);
-    group.add(p);
-    return p;
+    m.instanceMatrix.needsUpdate=true;
+    if(m.instanceColor) m.instanceColor.needsUpdate=true;
+    m.frustumCulled=false;
+    group.add(m);
+    return m;
   }
 
-  const texLove=textTexture('I LOVE YOU',{color:'#EFE4D8'});
-  const texYou=textTexture('LOVE',{color:'#C9B49A',font:'600 64px Georgia, serif'});
-  const idx=[...Array(total).keys()];
-  const small=cloud(idx.slice(0,nSmall), texLove, isMobile?0.85:0.72, 0.92);
-  const big=cloud(idx.slice(nSmall), texYou, isMobile?1.35:1.15, 0.95);
+  const nP=Math.round(samples.length*0.72), nL=Math.round(samples.length*0.14);
+  const matOpts={ roughness:0.88, metalness:0.0, alphaTest:0.32, side:THREE.FrontSide };
+  const meshP=fillMesh(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texPhrase,...matOpts}), samples.slice(0,nP), 0.52, 0.0975);
+  const meshL=fillMesh(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texLove,...matOpts}), samples.slice(nP,nP+nL), 0.34, 0.064);
+  const meshY=fillMesh(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texYou,...matOpts}), samples.slice(nP+nL), 0.30, 0.056);
+  [meshP,meshL,meshY].forEach(m=>m.renderOrder=1);
 
-  // faint volumetric core — gives shadow/depth only, words remain the visible structure
-  const coreGeo=new THREE.SphereGeometry(3.4,24,18);
-  // deform sphere into heart-ish blob by scaling top lobes
-  const coreMat=new THREE.MeshBasicMaterial({color:0x1A1014, transparent:true, opacity:0.55, depthWrite:true});
-  const core=new THREE.Mesh(coreGeo,coreMat);
-  core.scale.set(1.25,1.05,0.55); core.position.y=0.6;
-  group.add(core);
-  group.children.forEach(()=>{});
-  // ensure words render after core
-  small.renderOrder=2; big.renderOrder=3;
-
-  // faint warm key glow sprite behind heart (illumination, not neon)
-  const glowC=document.createElement('canvas'); glowC.width=glowC.height=256;
-  const gg=glowC.getContext('2d');
-  const grad=gg.createRadialGradient(128,128,0,128,128,128);
-  grad.addColorStop(0,'rgba(200,140,120,.20)'); grad.addColorStop(.5,'rgba(120,51,68,.10)'); grad.addColorStop(1,'rgba(0,0,0,0)');
-  gg.fillStyle=grad; gg.fillRect(0,0,256,256);
-  const glowTex=new THREE.CanvasTexture(glowC);
-  const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,transparent:true,opacity:.9,depthWrite:false}));
-  glow.scale.set(22,22,1); glow.position.z=-6; scene.add(glow);
-
-  // state
-  let tx=0,ty=0,mx=0,my=0, dragY=0,dragX=0,tdy=0,tdx=0, pulse=0,pulseT=0;
-  let visible=true, t0=performance.now(), intro=0;
+  // ---- interaction: breathe, drift, drag, scroll — never a button ----
+  let tx=0,ty=0,mx=0,my=0,dy=0,dx=0,tdy=0,tdx=0,pulse=0;
+  let visible=true; const t0=performance.now();
+  let camZ=cam.position.z, camTarget=Z_WIDE, intro=0;
   addEventListener('pointermove',e=>{tx=(e.clientX/innerWidth-.5)*2;ty=(e.clientY/innerHeight-.5)*2},{passive:true});
   let dragging=false,lx=0,ly=0;
-  canvas.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;canvas.setPointerCapture(e.pointerId)});
-  canvas.addEventListener('pointermove',e=>{if(!dragging)return;tdy+=(e.clientX-lx)*.008;tdx+=(e.clientY-ly)*.005;lx=e.clientX;ly=e.clientY},{passive:true});
-  addEventListener('pointerup',()=>dragging=false);
-  function fire(){
-    pulseT=1;
-    document.body.classList.add('ignited');
-    setTimeout(()=>document.body.classList.remove('ignited'),2600);
-    const you=document.getElementById('you');
-    if(!finalMode&&you) setTimeout(()=>you.scrollIntoView({behavior:reduced?'auto':'smooth'}),700);
-    try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}
+  canvas.style.touchAction='pan-y';
+  canvas.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;canvas.style.cursor='grabbing'});
+  addEventListener('pointermove',e=>{
+    if(!dragging)return; tdy+=(e.clientX-lx)*0.006; tdx+=(e.clientY-ly)*0.004; lx=e.clientX; ly=e.clientY;
+  },{passive:true});
+  addEventListener('pointerup',()=>{dragging=false;canvas.style.cursor='grab'});
+  canvas.style.cursor='grab';
+  canvas.addEventListener('click',()=>{ pulse=1; rim.intensity=1.4; setTimeout(()=>rim.intensity=0.65,900);
+    document.body.classList.add('ignited'); setTimeout(()=>document.body.classList.remove('ignited'),2600); });
+
+  // finale camera journey: wide -> medium -> close, driven by scroll
+  if(finalMode){
+    const sec=document.getElementById('finale');
+    const onScroll=()=>{
+      if(!sec) return;
+      const r=sec.getBoundingClientRect(), h=innerHeight;
+      const prog=THREE.MathUtils.clamp(1-(r.top+r.height*0.5)/h, 0, 1);
+      camTarget = prog<0.35 ? 8.2 : prog<0.7 ? 5.6 : 3.9;
+    };
+    addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  } else {
+    addEventListener('scroll',()=>{
+      const y=scrollY, h=innerHeight||1;
+      tdy += 0; // keep
+      camTarget = Z_WIDE - Math.min(1.4,(y/h)*1.1); // barely leans in as you leave
+    },{passive:true});
   }
-  canvas.addEventListener('click',fire);
-  document.getElementById('heart-btn')?.addEventListener('click',fire);
 
   new IntersectionObserver(es=>es.forEach(e=>visible=e.isIntersecting),{threshold:0.02}).observe(canvas);
   document.addEventListener('visibilitychange',()=>visible=!document.hidden);
@@ -146,55 +162,54 @@ function build(canvas, { finalMode=false, density=1 }={}){
   }
   resize(); addEventListener('resize',resize);
 
-  // scroll dolly: hero pulls back slightly, finale pushes macro
-  let scrollZ=0;
-  if(!reduced) addEventListener('scroll',()=>{
-    const y=scrollY, h=innerHeight;
-    scrollZ = finalMode ? 0 : Math.min(6, (y/h)*4);
-  },{passive:true});
-
   let raf=0;
   function tick(now){
     raf=requestAnimationFrame(tick);
-    if(!visible)return;
+    if(!visible) return;
     const t=(now-t0)/1000;
-    intro=Math.min(1,intro+0.0035); // slow emergence from darkness
-    mx+=(tx-mx)*.035; my+=(ty-my)*.035;
-    dragY+=(tdy-dragY)*.06; dragX+=(tdx-dragX)*.06; tdy*=.94; tdx*=.94;
-    pulseT*=.94; pulse=Math.sin(Math.min(1,pulseT)*Math.PI);
-    const slow=reduced?0:1;
-    group.rotation.y=(finalMode?t*.20:t*.14)*slow + Math.sin(t*.3)*.12*slow + mx*.30 + dragY;
-    group.rotation.x=Math.sin(t*.45)*.06*slow + my*.12 + dragX;
-    group.position.y=Math.sin(t*.7)*.30*slow;
-    const targetZ=(finalMode? 15 : 30) + (finalMode? Math.sin(t*.25)*1.2 : 0) - scrollZ*0 + (finalMode?0:(1-intro)*14);
-    cam.position.z+=((finalMode?15:30)-cam.position.z)*.02;
-    // close inspection mode when finale in view handled by finalMode base 15
+    intro=Math.min(1,intro+0.0028); // slow emergence from black
     const ease=intro*intro*(3-2*intro);
-    small.material.opacity=.92*ease; big.material.opacity=.95*ease;
-    const baseS1=isMobile?.85:.72, baseS2=isMobile?1.35:1.15;
-    small.material.size=baseS1*(1+pulse*.35);
-    big.material.size=baseS2*(1+pulse*.5);
-    glow.material.opacity=.35+.55*ease;
+    mx+=(tx-mx)*0.03; my+=(ty-my)*0.03;
+    dy+=(tdy-dy)*0.06; dx+=(tdx-dx)*0.06; tdy*=0.93; tdx*=0.93;
+    pulse*=0.95;
+    const slow=reduced?0:1;
+    group.rotation.y=(finalMode?t*0.16:t*0.11)*slow + Math.sin(t*0.3)*0.1*slow + mx*0.28 + dy;
+    group.rotation.x=Math.sin(t*0.42)*0.05*slow + my*0.1 + dx;
+    group.position.y=Math.sin(t*0.65)*0.22*slow;
+    const s=1+pulse*0.025*Math.sin(t*6);
+    group.scale.set(s,s,s);
+    camZ+=(camTarget-camZ)*0.02;
+    // opening dolly: far -> resting distance while veil lifts
+    const openZ = finalMode? camZ : camZ + (1-ease)*5;
+    cam.position.z=openZ;
     renderer.render(scene,cam);
   }
-  if(reduced){ resize(); small.material.opacity=.92; big.material.opacity=.95; renderer.render(scene,cam); }
+  if(reduced){ resize(); cam.position.z=Z_WIDE; group.rotation.y=0.5; renderer.render(scene,cam); }
   else tick(performance.now());
+
+  // veil lift for the opening scene
+  if(!finalMode){
+    const veil=document.getElementById('intro-veil');
+    if(veil) requestAnimationFrame(()=>veil.classList.add('lift'));
+  }
 }
 
 if(!webglOK()){
   document.querySelectorAll('canvas[id^="heart"]').forEach(c=>c.style.display='none');
   document.querySelectorAll('.heart-fallback').forEach(f=>f.hidden=false);
+  document.getElementById('intro-veil')?.classList.add('lift');
 }else{
-  try{ build(document.getElementById('heart-canvas'),{}); }catch(e){
+  try{ build(document.getElementById('heart-canvas'),{}); }
+  catch(e){
     document.getElementById('heart-canvas').style.display='none';
     document.querySelector('.heart-fallback').hidden=false;
+    document.getElementById('intro-veil')?.classList.add('lift');
   }
   try{
-    // lazy-init finale when near viewport
     const fc=document.getElementById('heart-final');
     const io=new IntersectionObserver(es=>es.forEach(e=>{
-      if(e.isIntersecting){ try{build(fc,{finalMode:true,density:.8})}catch(err){} io.disconnect(); }
-    }),{rootMargin:'600px'});
+      if(e.isIntersecting){ try{build(fc,{finalMode:true})}catch(err){} io.disconnect(); }
+    }),{rootMargin:'700px'});
     io.observe(fc);
   }catch(e){}
 }

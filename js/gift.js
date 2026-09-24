@@ -1,26 +1,34 @@
-// Gift open + candle wish
+/* Gift opens on scroll — nothing is locked behind a click.
+   Cake plays its quiet scene on scroll. Touching the objects is optional delight only. */
 (function(){
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const box=document.getElementById('gift-box');
-  const letter=document.getElementById('gift-letter');
-  if(box) box.addEventListener('click',()=>{
-    const open=box.classList.toggle('open');
-    box.setAttribute('aria-expanded',String(open));
-    box.querySelector('.gift-hint').textContent=open?'':'open';
-    if(open&&letter){letter.hidden=false;letter.animate(
-      [{opacity:0,transform:'translateY(14px)',filter:'blur(6px)'},{opacity:1,transform:'none',filter:'none'}],
-      {duration:1100,easing:'ease',fill:'both'});letter.scrollIntoView({behavior:'smooth',block:'nearest'});}
-  });
-  const wish=document.getElementById('wish-btn');
-  const flame=document.getElementById('flame');
-  const smoke=document.getElementById('smoke');
-  const line=document.getElementById('wish-line');
-  if(wish) wish.addEventListener('click',()=>{
-    flame.classList.add('out'); smoke.classList.add('show');
-    wish.disabled=true; wish.textContent='wish kept';
-    wish.style.opacity=.5;
-    if(line){line.hidden=false;line.animate(
-      [{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'none'}],{duration:1600,fill:'both'});
-      try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}
-    }
-  },{once:false});
+  if(box){
+    // opens by itself as she arrives
+    new IntersectionObserver((es,obs)=>es.forEach(e=>{
+      if(e.isIntersecting){ box.classList.add('open'); box.setAttribute('aria-hidden','true'); obs.disconnect(); }
+    }),{threshold:0.45}).observe(box);
+    // optional: touching it breathes the light, never required
+    box.addEventListener('click',()=>{
+      box.classList.toggle('open');
+      try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}
+    });
+  }
+  const flame=document.getElementById('flame'), smoke=document.getElementById('smoke'),
+        line=document.getElementById('wish-line'), cake=document.querySelector('.cake');
+  let out=false;
+  function blowOut(){
+    if(out||!flame) return; out=true;
+    flame.classList.add('out'); smoke?.classList.add('show');
+    line?.classList.add('kept');
+    try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}
+  }
+  if(cake){
+    // scene plays itself: lit while she reads, then the wish is kept
+    new IntersectionObserver((es,obs)=>es.forEach(e=>{
+      if(e.isIntersecting && !reduced){ setTimeout(blowOut, 7000); obs.disconnect(); }
+      else if(e.isIntersecting && reduced){ blowOut(); obs.disconnect(); }
+    }),{threshold:0.5}).observe(cake);
+    flame?.addEventListener('click',blowOut); // optional early wish
+  }
 })();
