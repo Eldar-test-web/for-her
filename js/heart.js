@@ -75,18 +75,23 @@ function build(canvas, { finalMode=false }={}){
   const outline=heartOutline();
   let minX=9,maxX=-9,minY=9,maxY=-9;
   outline.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);});
-  const DEPTH=0.5;
+  const DEPTH=0.65;
   const N = isMobile? {front:700, rim:450, back:250} : {front:2400, rim:1800, back:800};
 
   function facePoints(n, z, dir){
     const pts=[]; let guard=0;
+    let ccx=0, ccy=0; outline.forEach(p=>{ccx+=p[0];ccy+=p[1];}); ccx/=outline.length; ccy/=outline.length;
+    let maxR=0.001; outline.forEach(p=>{maxR=Math.max(maxR,Math.hypot(p[0]-ccx,p[1]-ccy));});
+    const BULGE=0.42; // convex cushion — the face curves toward her
     while(pts.length<n && guard<n*60){
       guard++;
       const x=minX+rand()*(maxX-minX), y=minY+rand()*(maxY-minY);
       if(!inPoly(x,y,outline)) continue;
-      // denser toward the silhouette so edges read crisply
-      pts.push({p:[x+(rand()-.5)*0.03, y+0.1+(rand()-.5)*0.03, z+(rand()-.5)*0.05],
-        n:[(rand()-.5)*0.3*dir, (rand()-.5)*0.3, dir]});
+      const dx=(x-ccx)/maxR, dy=(y-ccy)/maxR;
+      const r2=Math.min(1,dx*dx+dy*dy);
+      const lift=BULGE*(1-r2)*dir;
+      pts.push({p:[x+(rand()-.5)*0.03, y+0.1+(rand()-.5)*0.03, z+lift+(rand()-.5)*0.04],
+        n:[dx*1.1+(rand()-.5)*0.2, dy*1.1+(rand()-.5)*0.2, dir]});
     }
     return pts;
   }
@@ -172,30 +177,34 @@ function build(canvas, { finalMode=false }={}){
     return m;
   }
 
-  const matOpts={ roughness:0.88, metalness:0.0, alphaTest:0.3, side:THREE.DoubleSide };
+  const matOpts={ roughness:0.82, metalness:0.0, alphaTest:0.3, side:THREE.DoubleSide,
+    emissive:0xffffff, emissiveIntensity:0.30 }; // letters stay readable in shadow
+  function stdMat(tex){ return new THREE.MeshStandardMaterial({...matOpts, map:tex, emissiveMap:tex}); }
   // front: dense field of I LOVE YOU with larger LOVE accents
   const nF=front.length, nAcc=Math.round(nF*0.14);
   const frontMain=front.slice(nAcc), frontAcc=front.slice(0,nAcc);
-  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texPhrase,...matOpts}), frontMain, 0.50, 0.094, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texLove,...matOpts}), frontAcc, 0.42, 0.079, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texPhrase,...matOpts}), back, 0.50, 0.094, -1);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), frontMain, 0.50, 0.094, 1);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texLove), frontAcc, 0.42, 0.079, 1);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.50, 0.094, -1);
   // rim: LOVE / YOU alternating around the profile
   const rimL1=rimPts.filter((_,i)=>i%2===0), rimL2=rimPts.filter((_,i)=>i%2!==0);
-  fillRim(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texLove,...matOpts}), rimL1, 0.36, 0.068);
-  fillRim(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texYou,...matOpts}), rimL2, 0.33, 0.062);
+  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texLove), rimL1, 0.36, 0.068);
+  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texYou), rimL2, 0.33, 0.062);
 
-  // ---- alive and calm: slow self-rotation + inertial drag ----
-  let tx=0,ty=0,mx=0,my=0,spin=0,spinV=0;
-  let visible=true; const t0=performance.now();
+  // ---- alive and calm: slow self-rotation + inertial drag + hover bloom ----
+  let tx=0,ty=0,mx=0,my=0,spin=0.6,spinV=0,hover=0;
+  let visible=true, last=performance.now(); const t0=last;
   let camZ=cam.position.z, camTarget=Z_REST, intro=0;
   addEventListener('pointermove',e=>{tx=(e.clientX/innerWidth-.5)*2;ty=(e.clientY/innerHeight-.5)*2},{passive:true});
   let dragging=false,lx=0;
   canvas.style.touchAction='pan-y'; canvas.style.cursor='grab';
   canvas.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;canvas.style.cursor='grabbing'});
   addEventListener('pointermove',e=>{
-    if(!dragging)return; spinV+=(e.clientX-lx)*0.0045; lx=e.clientX;
+    if(!dragging)return; spinV+=(e.clientX-lx)*0.0035; lx=e.clientX; // flick to spin
   },{passive:true});
   addEventListener('pointerup',()=>{dragging=false;canvas.style.cursor='grab'});
+  canvas.addEventListener('pointerenter',()=>{hover=1});
+  canvas.addEventListener('pointerleave',()=>{hover=0});
   canvas.addEventListener('click',()=>{ pulse=1; rimL.intensity=1.3; setTimeout(()=>rimL.intensity=0.6,900);
     document.body.classList.add('ignited'); setTimeout(()=>document.body.classList.remove('ignited'),2600); });
 
@@ -221,24 +230,26 @@ function build(canvas, { finalMode=false }={}){
   }
   resize(); addEventListener('resize',resize);
 
-  let raf=0, pulse=0;
+  let raf=0, pulse=0, hoverEase=0;
   function tick(now){
     raf=requestAnimationFrame(tick);
-    if(!visible) return;
+    if(!visible){ last=now; return; }
+    const dt=Math.min(0.05,(now-last)/1000); last=now; // seconds — speed is real time
     const t=(now-t0)/1000;
-    intro=Math.min(1,intro+0.0028);
+    intro=Math.min(1,intro+dt*0.17);
     const ease=intro*intro*(3-2*intro);
-    mx+=(tx-mx)*0.03; my+=(ty-my)*0.03;
+    mx+=(tx-mx)*Math.min(1,dt*2); my+=(ty-my)*Math.min(1,dt*2);
     const slow=reduced?0:1;
-    // slow self-rotation (~one turn per 30s) + flick-to-spin inertia + cursor breath
-    spinV*=0.96; spin+=((finalMode?0.16:0.21)*slow + spinV + mx*0.02);
-    pulse*=0.95;
+    // one gentle turn ≈ 30s. drag adds flick velocity that melts away.
+    spinV*=Math.exp(-2.4*dt); spin+=((finalMode?0.17:0.21)*slow + spinV + mx*0.05)*dt;
+    hoverEase+=(hover-hoverEase)*Math.min(1,dt*3.5);
+    pulse*=Math.exp(-3*dt);
     group.rotation.y=spin;
     group.rotation.x=Math.sin(t*0.42)*0.05*slow + my*0.08;
     group.position.y=Math.sin(t*0.65)*0.2*slow;
-    const s=1+pulse*0.025*Math.sin(t*6);
+    const s=(1+pulse*0.02*Math.sin(t*6))*(1+hoverEase*0.13); // grows under her cursor
     group.scale.set(s,s,s);
-    camZ+=(camTarget-camZ)*0.02;
+    camZ+=(camTarget-camZ)*Math.min(1,dt*1.4);
     cam.position.z = finalMode? camZ : camZ + (1-ease)*5;
     renderer.render(scene,cam);
   }

@@ -9,11 +9,11 @@
   const defs=document.createElementNS(NS,'defs');
   defs.innerHTML=
     `<radialGradient id="petalG" cx="42%" cy="38%" r="75%">`+
-    `<stop offset="0%" stop-color="#7A2E3E"/><stop offset="55%" stop-color="#552030"/>`+
-    `<stop offset="100%" stop-color="#2E1219"/></radialGradient>`+
+    `<stop offset="0%" stop-color="#93374A"/><stop offset="55%" stop-color="#682637"/>`+
+    `<stop offset="100%" stop-color="#3A1620"/></radialGradient>`+
     `<radialGradient id="innerG" cx="50%" cy="45%" r="70%">`+
-    `<stop offset="0%" stop-color="#9A5563"/><stop offset="60%" stop-color="#63273A"/>`+
-    `<stop offset="100%" stop-color="#33141D"/></radialGradient>`;
+    `<stop offset="0%" stop-color="#BC7581"/><stop offset="60%" stop-color="#6E2C3E"/>`+
+    `<stop offset="100%" stop-color="#3A1620"/></radialGradient>`;
   svg.insertBefore(defs, root);
 
   function E(n,attrs,parent){
@@ -50,7 +50,7 @@
       const t=i/steps, a=t*turns*2*Math.PI, r=R*0.05+t*R*0.2;
       d+=(i?'L':'M')+(Math.cos(a)*r).toFixed(1)+' '+(-R*0.1+Math.sin(a)*r).toFixed(1);
     }
-    E('path',{d, fill:'none', stroke:'#C08A94','stroke-width':R*0.045,'stroke-linecap':'round', opacity:.85},g);
+    E('path',{d, fill:'none', stroke:'#DDA6B0','stroke-width':R*0.045,'stroke-linecap':'round', opacity:.9},g);
     return g;
   }
   function bud(R){
@@ -78,10 +78,10 @@
   }
 
   // corners + edges — clear of the centre column where the words live
-  place(rose(95), 130, 150, 1, -12, 9);
-  place(rose(115), 1320, 340, 1, 10, 11);
-  place(rose(85), 150, 770, 0.95, 6, 10);
-  place(rose(100), 1305, 790, 1, -8, 12);
+  place(rose(115), 130, 150, 1, -12, 9);
+  place(rose(135), 1320, 340, 1, 10, 11);
+  place(rose(105), 150, 770, 0.95, 6, 10);
+  place(rose(120), 1305, 790, 1, -8, 12);
   place(bud(30), 1120, 110, 1, 14, 8);
   place(bud(26), 290, 470, 1, -10, 9);
 
