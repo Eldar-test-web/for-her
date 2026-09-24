@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>For You — A Quiet Gift</title>
+<meta name="description" content="A small cinematic gift, made for one person." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Manrope:wght@200;300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/base.css" />
+<link rel="stylesheet" href="styles/typography.css" />
+<link rel="stylesheet" href="styles/components.css" />
+<link rel="stylesheet" href="styles/sections.css" />
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+</head>
+<body>
+<a class="skip" href="#beginning">Skip to beginning</a>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div id="cursor-glow" aria-hidden="true"></div>
+<div id="warm-veil" aria-hidden="true"></div>
+
+<div id="loader" aria-hidden="true">
+  <p class="loader-mark">for you</p>
+  <p class="loader-sub">a quiet moment, loading</p>
+</div>
+
+<nav id="story-nav" aria-label="Story sections">
+  <a href="#beginning" data-sec="beginning"><span>01</span><em>Beginning</em></a>
+  <a href="#you" data-sec="you"><span>02</span><em>You</em></a>
+  <a href="#why" data-sec="why"><span>03</span><em>Why You</em></a>
+  <a href="#gift" data-sec="gift"><span>04</span><em>A Little Gift</em></a>
+  <a href="#before-you-go" data-sec="before-you-go"><span>05</span><em>Before You Go</em></a>
+</nav>
+
+<div class="sound-wrap">
+  <button id="sound-btn" aria-pressed="false" aria-label="Toggle ambient sound">
+    <span class="sound-line"></span><span class="sound-line"></span><span class="sound-line"></span>
+    <span id="sound-label">sound off</span>
+  </button>
+</div>
+
+<main id="main">
+<!-- HERO -->
+<header id="beginning" class="hero" data-theme="dark">
+  <p class="eyebrow reveal">a quiet thing, made for one person</p>
+  <div class="heart-stage" id="heart-stage">
+    <canvas id="heart-canvas" aria-label="A dark sculpted three-dimensional heart with the words I love you resting on its surface. Activate to continue."></canvas>
+    <div class="heart-fallback" hidden>
+      <svg viewBox="0 0 100 90" role="img" aria-label="Heart with I love you"><path d="M50 84 C20 62 6 44 6 28 C6 14 17 6 29 6 C39 6 47 13 50 22 C53 13 61 6 71 6 C83 6 94 14 94 28 C94 44 80 62 50 84 Z"/><text x="50" y="38" text-anchor="middle">I LOVE YOU</text></svg>
+    </div>
+    <button id="heart-btn" aria-label="Touch the heart to begin">touch the heart</button>
+  </div>
+  <h1 class="sr-only">I love you</h1>
+  <p class="opening-line reveal">Some people pass through. You stayed — quietly, then all at once.</p>
+  <p class="scroll-hint reveal" aria-hidden="true"><span></span>scroll slowly</p>
+</header>
+
+<!-- INTERLUDE -->
+<section class="interlude" aria-label="Introduction">
+  <p class="reveal-line">I made this the way you would leave a note on a table —</p>
+  <p class="reveal-line">not to impress you, but so you would find it when you needed it.</p>
+  <p class="reveal-line dim">Take your time. There is no hurry here.</p>
+</section>
+
+<!-- YOU / COMPLIMENTS -->
+<section id="you" aria-label="You, in nineteen lines">
+  <div class="section-head">
+    <p class="eyebrow">02 — You</p>
+    <h2 class="serif">Nineteen true things,<br /><em>said plainly.</em></h2>
+    <p class="section-note">Scroll. One at a time — the way I would tell you.</p>
+    <p class="verse-count" aria-live="polite"><span id="verse-num">01</span> / 19</p>
+  </div>
+  <div id="verses">
+    <article class="verse size-xl align-center"><p>You are the melody everyone wishes they had written.</p><span>01</span></article>
+    <article class="verse size-lg align-left"><p>Seeing your beauty feels like sunrise after the longest night.</p><span>02</span></article>
+    <article class="verse size-md align-right"><p>You are the only star I see in a crowded sky.</p><span>03</span></article>
+    <article class="verse size-lg align-center"><p>You are the sudden burst of colour in a black-and-white world.</p><span>04</span></article>
+    <article class="verse size-md align-left"><p>You are a beautiful poem in a world of small talk.</p><span>05</span></article>
+    <article class="verse size-md align-center"><p>In a room full of breathtaking art, my eyes would still only search for you.</p><span>06</span></article>
+    <article class="verse size-lg align-right"><p>Loving you feels like remembering a wonderful memory from a life I have not lived yet.</p><span>07</span></article>
+    <article class="verse size-md align-center"><p>If the universe were written in black ink, you would be the colour on every page.</p><span>08</span></article>
+    <article class="verse size-md align-left"><p>If my heart ever needed a home, it would be the exact place where your eyes meet mine.</p><span>09</span></article>
+    <article class="verse size-xl align-center"><p>Even if I had a thousand years to memorise your face, I would still find a new reason to fall for you every day.</p><span>10</span></article>
+    <article class="verse size-md align-right"><p>Every love song I ever heard finally makes sense when I look at you.</p><span>11</span></article>
+    <article class="verse size-xl align-center"><p>I would choose you in every lifetime.</p><span>12</span></article>
+    <article class="verse size-md align-left"><p>Even in a room full of stars, I would still look for your eyes.</p><span>13</span></article>
+    <article class="verse size-lg align-center"><p>If love had a face, I would know you.</p><span>14</span></article>
+    <article class="verse size-md align-right"><p>You are the kind of beautiful that words were never made for.</p><span>15</span></article>
+    <article class="verse size-lg align-left"><p>You are my sunrise after every dark night.</p><span>16</span></article>
+    <article class="verse size-md align-center"><p>You are the star I would navigate by.</p><span>17</span></article>
+    <article class="verse size-md align-right"><p>I could spend a lifetime learning the shape of you.</p><span>18</span></article>
+    <article class="verse size-xl align-center final-verse"><p>I think some part of me was always looking for you.</p><span>19</span></article>
+  </div>
+</section>
+
+<!-- GIFT -->
+<section id="gift" aria-label="A little gift">
+  <p class="eyebrow">04 — A little gift</p>
+  <h2 class="serif">I made you<br /><em>something to open.</em></h2>
+  <p class="section-note">No hurry. It will wait until you are ready.</p>
+  <div class="gift-stage">
+    <button id="gift-box" aria-expanded="false" aria-label="Open the gift">
+      <span class="gift-glow" aria-hidden="true"></span>
+      <span class="gift-base" aria-hidden="true"></span>
+      <span class="gift-lid" aria-hidden="true"><i></i></span>
+      <span class="gift-light" aria-hidden="true"></span>
+      <span class="gift-hint">open</span>
+    </button>
+    <div class="gift-letter" id="gift-letter" hidden>
+      <p class="gift-letter-kicker">inside, only this —</p>
+      <p class="serif">I wrapped nothing expensive. Just my time, my attention, and my intention to choose you carefully, in ordinary days as much as rare ones.</p>
+      <p class="gift-letter-sign">— yours</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY YOU -->
+<section id="why" aria-label="Why it was always you">
+  <p class="eyebrow">03 — Why you</p>
+  <h2 class="serif">Why it was<br /><em>always you.</em></h2>
+  <div class="why-grid">
+    <article class="reveal"><h3>Calm</h3><p>My mind is loud. You lower the volume without trying — coffee tastes better, traffic feels shorter, ordinary evenings feel arranged just for us.</p></article>
+    <article class="reveal"><h3>Attention</h3><p>You notice the small edits — when I am tired before I say it, when I am proud and pretending not to be. Being known like that is rare.</p></article>
+    <article class="reveal"><h3>Gravity</h3><p>I am curious about everything, but I orbit back to you. Not from habit. From recognition, as if some older part of me had already decided.</p></article>
+    <article class="reveal"><h3>Ease</h3><p>Home stopped being a place. It is the ten minutes on the sofa doing nothing, your head on my shoulder, both of us half-laughing at nothing.</p></article>
+    <article class="reveal"><h3>Respect</h3><p>I admire how you move — direct, kind, unwilling to be small. You make me want to be more deliberate, more honest, more worthy of the seat beside you.</p></article>
+    <article class="reveal"><h3>Return</h3><p>Given every road again, I would still take the one that leads to the same door, the same laugh, the same you — and I would walk it faster.</p></article>
+  </div>
+</section>
+
+<!-- CAKE -->
+<section id="wish" aria-label="A quiet wish">
+  <p class="eyebrow">a small celebration</p>
+  <h2 class="serif">Make a wish.<br /><em>Then let it stay.</em></h2>
+  <p class="section-note">Built from nothing but code — cream, shadow, and one small flame.</p>
+  <div class="cake-stage">
+    <div class="cake" role="img" aria-label="A minimal dark cake with cream layers and a single lit candle">
+      <div class="flame-wrap"><div class="flame" id="flame"></div><div class="smoke" id="smoke"></div></div>
+      <div class="candle"></div>
+      <div class="plate"></div>
+      <div class="tier tier-top"></div>
+      <div class="tier tier-mid"></div>
+      <div class="tier tier-base"></div>
+      <div class="cake-shadow"></div>
+    </div>
+    <button id="wish-btn" class="btn">blow out the candle</button>
+    <p class="wish-line" id="wish-line" hidden>Some wishes are meant to stay.</p>
+  </div>
+</section>
+
+<!-- LETTER -->
+<section id="before-you-go" aria-label="Before you go">
+  <p class="eyebrow">05 — Before you go</p>
+  <h2 class="serif">Before you go.</h2>
+  <div class="letter">
+    <p>I do not say this often enough in plain words, so let me say it here where I cannot interrupt myself.</p>
+    <p>I like who I am when you are near. Not a larger version, not a performance — a quieter, truer one. You make carefulness feel natural. You make staying feel like an adventure, not a compromise.</p>
+    <p>There are days I get wrong — distracted, short, late in the ways I am trying to outgrow. You never keep score, and that mercy has changed me more than any lecture could. I want to repay it daily, in practical ways: listening longer, asking better questions, remembering what matters to you without being asked.</p>
+    <p>I do not promise perfection. I promise presence. I promise to tell you when I am afraid instead of going silent, to choose the honest sentence over the easy one, to keep the small rituals that are only ours.</p>
+    <p>If years from now someone asks what I was most sure of, I hope the answer is uncomplicated: her. The way she laughed with her whole face. The way home learned her name.</p>
+    <p class="sign">Yours — completely, and without theatre.</p>
+  </div>
+</section>
+
+<!-- FINALE -->
+<section id="finale" aria-label="Finale">
+  <div class="finale-stage"><canvas id="heart-final" aria-label="The sculpted heart, quiet and slow, with I love you at its centre"></canvas></div>
+  <p class="finale-love serif" aria-hidden="true">I LOVE YOU</p>
+  <p class="finale-sub">and somehow, those three words still don’t feel like enough.</p>
+  <p class="colophon">made quietly, for you — <span id="year"></span></p>
+</section>
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/story.js"></script>
+<script src="js/gift.js"></script>
+<script type="module" src="js/heart.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
