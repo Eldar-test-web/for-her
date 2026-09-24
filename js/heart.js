@@ -191,6 +191,33 @@ function build(canvas, { finalMode=false }={}){
   fillRim(new THREE.PlaneGeometry(1,1), stdMat(texLove), rimL1, 0.36, 0.068);
   fillRim(new THREE.PlaneGeometry(1,1), stdMat(texYou), rimL2, 0.33, 0.062);
 
+  // golden micro-dust suspended inside the heart — fills the gaps between words
+  let dust=null;
+  if(!reduced){
+    const dc=document.createElement('canvas'); dc.width=dc.height=64;
+    const dg=dc.getContext('2d');
+    const grd=dg.createRadialGradient(32,32,0,32,32,32);
+    grd.addColorStop(0,'rgba(255,236,205,1)'); grd.addColorStop(0.4,'rgba(216,178,138,.7)');
+    grd.addColorStop(1,'rgba(216,178,138,0)');
+    dg.fillStyle=grd; dg.fillRect(0,0,64,64);
+    const dtex=new THREE.CanvasTexture(dc); dtex.colorSpace=THREE.SRGBColorSpace;
+    const DN=isMobile?110:320, dp=new Float32Array(DN*3);
+    let placed=0, guard=0;
+    while(placed<DN && guard<DN*80){
+      guard++;
+      const x=minX+rand()*(maxX-minX), y=minY+rand()*(maxY-minY);
+      if(!inPoly(x,y,outline)) continue;
+      dp[placed*3]=x; dp[placed*3+1]=y+0.1; dp[placed*3+2]=(rand()-.5)*DEPTH*1.4;
+      placed++;
+    }
+    const dgeo=new THREE.BufferGeometry();
+    dgeo.setAttribute('position',new THREE.BufferAttribute(dp,3));
+    dust=new THREE.Points(dgeo,new THREE.PointsMaterial({map:dtex,size:0.075,transparent:true,
+      opacity:0.5,depthWrite:false,blending:THREE.AdditiveBlending,color:0xd8b28a}));
+    dust.frustumCulled=false; dust.renderOrder=0;
+    group.add(dust);
+  }
+
   // ---- alive and calm: slow self-rotation + inertial drag + hover bloom ----
   let tx=0,ty=0,mx=0,my=0,spin=0.6,spinV=0,hover=0;
   let visible=true, last=performance.now(); const t0=last;
@@ -241,7 +268,7 @@ function build(canvas, { finalMode=false }={}){
     mx+=(tx-mx)*Math.min(1,dt*2); my+=(ty-my)*Math.min(1,dt*2);
     const slow=reduced?0:1;
     // one gentle turn ≈ 30s. drag adds flick velocity that melts away.
-    spinV*=Math.exp(-2.4*dt); spin+=((finalMode?0.17:0.21)*slow + spinV + mx*0.05)*dt;
+    spinV*=Math.exp(-2.4*dt); spin+=((finalMode?0.05:0.055)*slow + spinV + mx*0.02)*dt;
     hoverEase+=(hover-hoverEase)*Math.min(1,dt*3.5);
     pulse*=Math.exp(-3*dt);
     group.rotation.y=spin;
@@ -249,6 +276,7 @@ function build(canvas, { finalMode=false }={}){
     group.position.y=Math.sin(t*0.65)*0.2*slow;
     const s=(1+pulse*0.02*Math.sin(t*6))*(1+hoverEase*0.13); // grows under her cursor
     group.scale.set(s,s,s);
+    if(dust){ dust.rotation.y=-t*0.03; dust.material.opacity=0.42+0.14*Math.sin(t*1.2); }
     camZ+=(camTarget-camZ)*Math.min(1,dt*1.4);
     cam.position.z = finalMode? camZ : camZ + (1-ease)*5;
     renderer.render(scene,cam);

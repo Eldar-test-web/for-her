@@ -68,34 +68,6 @@
     (function loop(){gx+=(tx-gx)*0.05;gy+=(ty-gy)*0.05;glow.style.transform=`translate(${gx-260}px,${gy-260}px)`;requestAnimationFrame(loop)})();
   } else if(glow){ glow.style.display='none'; }
 
-  // dark blooms, generated in code — layered petal rings, near-black wine
-  (function blooms(){
-    const NS='http://www.w3.org/2000/svg';
-    const rings=[
-      {n:12, rx:9,  ry:92, fill:'none',    stroke:'#33202A', sw:1.5, off:0},
-      {n:8,  rx:27, ry:70, fill:'#211318', stroke:'none',    sw:0,   off:0},
-      {n:8,  rx:22, ry:52, fill:'#2B1A21', stroke:'none',    sw:0,   off:22.5},
-      {n:6,  rx:15, ry:33, fill:'#39232C', stroke:'none',    sw:0,   off:10}
-    ];
-    document.querySelectorAll('.bloom-rings').forEach(g=>{
-      rings.forEach(r=>{
-        for(let i=0;i<r.n;i++){
-          const e=document.createElementNS(NS,'ellipse');
-          e.setAttribute('cx',0); e.setAttribute('cy',-r.ry);
-          e.setAttribute('rx',r.rx); e.setAttribute('ry',r.ry);
-          e.setAttribute('fill',r.fill);
-          if(r.stroke!=='none'){ e.setAttribute('stroke',r.stroke); e.setAttribute('stroke-width',r.sw); }
-          e.setAttribute('transform',`rotate(${r.off+i*360/r.n})`);
-          g.appendChild(e);
-        }
-      });
-      const c=document.createElementNS(NS,'circle');
-      c.setAttribute('r',13); c.setAttribute('fill','#47222D');
-      c.setAttribute('stroke','#8B4A58'); c.setAttribute('stroke-width',1);
-      g.appendChild(c);
-    });
-  })();
-
   const y=document.getElementById('year'); if(y) y.textContent=new Date().getFullYear();
   setTimeout(()=>document.getElementById('loader')?.classList.add('done'),900);
 })();

@@ -25,7 +25,12 @@
 <div class="vignette" aria-hidden="true"></div>
 <div id="cursor-glow" aria-hidden="true"></div>
 <div id="warm-veil" aria-hidden="true"></div>
-<div id="rose-field" aria-hidden="true"><svg id="rose-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"><g id="rose-root"></g></svg></div>
+<div id="photo-bg" aria-hidden="true">
+  <img class="ph ph-roses" src="assets/roses.jpg" alt="" />
+  <img class="ph ph-vine" src="assets/vine.jpg" alt="" />
+  <img class="ph ph-branch" src="assets/branch.jpg" alt="" />
+  <img class="ph ph-rose2" src="assets/rose-single.jpg" alt="" />
+</div>
 <div id="intro-veil" aria-hidden="true"></div>
 <div id="loader" aria-hidden="true"><p class="loader-mark">for you</p><p class="loader-sub">look closer</p></div>
 
@@ -33,7 +38,6 @@
 <!-- 00 -->
 <header id="beginning" class="hero">
   <p class="eyebrow reveal">for one person.</p>
-  <svg class="bloom bloom-hero" viewBox="-200 -200 400 400" aria-hidden="true"><g class="bloom-rings"></g></svg>
   <div class="heart-stage" id="heart-stage">
     <canvas id="heart-canvas" aria-label="A heart formed entirely from the words I love you, turning slowly in darkness."></canvas>
     <div class="heart-fallback" hidden>
@@ -84,7 +88,7 @@
 </section>
 
 <!-- 06 -->
-<div class="orn" aria-hidden="true"><svg viewBox="-200 -200 400 400" class="orn-bloom"><g class="bloom-rings"></g></svg></div>
+<div class="hairline" aria-hidden="true"></div>
 <section class="chapter" id="gift" aria-label="A little something">
   <p class="chap-mark">06 — A Little Something</p>
   <h2 class="serif reveal-line">There was still one thing<br /><em>I wanted to give you.</em></h2>
@@ -146,7 +150,7 @@
 </section>
 
 <!-- 10 -->
-<div class="orn" aria-hidden="true"><svg viewBox="-200 -200 400 400" class="orn-bloom"><g class="bloom-rings"></g></svg></div>
+<div class="hairline" aria-hidden="true"></div>
 <section class="chapter" id="before-you-go" aria-label="Before you go">
   <p class="chap-mark">10 — Before You Go</p>
   <h2 class="serif reveal-line">Before you go.</h2>
@@ -168,17 +172,20 @@
 <section id="finale" aria-label="I love you">
   <p class="chap-mark">11 — I Love You</p>
   <div class="finale-stage">
-  <svg class="bloom bloom-fin" viewBox="-200 -200 400 400" aria-hidden="true"><g class="bloom-rings"></g></svg>
   <canvas id="heart-final" aria-label="The heart of words, seen close"></canvas></div>
   <p class="finale-sub">Even here, my eyes would still find you.</p>
-  <p class="colophon">made quietly, for you — <span id="year"></span> · <a href="#beginning" id="to-top">back to the beginning</a></p>
 </section>
+
+<!-- the very bottom: a field of dark lilies -->
+<footer id="lily-end" aria-label="A field of dark red lilies">
+  <p class="colophon">made quietly, for you — <span id="year"></span> · <a href="#beginning" id="to-top">back to the beginning</a></p>
+  <!-- photography: Unsplash artists, used under the Unsplash License -->
+</footer>
 </main>
 
 <script src="js/config.js"></script>
 <script src="js/content.js"></script>
 <script src="js/audio.js"></script>
-<script src="js/roses.js"></script>
 <script src="js/story.js"></script>
 <script src="js/gift.js"></script>
 <script type="module" src="js/heart.js"></script>
