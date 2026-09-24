@@ -1,5 +1,14 @@
 /* sound + reveal + gift + cake + veils. No nav. No compliment buttons. */
-/* dark blooms — pure code, no images */
+/* dark roses + vines — fixed at the margins, behind the words */
+#rose-field{position:fixed;inset:0;z-index:0;pointer-events:none}
+#rose-svg{width:100%;height:100%;display:block}
+#rose-field .rose{opacity:.6;filter:blur(.7px);transform-box:fill-box;transform-origin:center bottom;animation:rosesway 10s ease-in-out infinite alternate}
+#rose-field .bud{opacity:.55}
+#rose-field .vine-stroke{opacity:.55}
+#rose-field .leaf{opacity:.5}
+@keyframes rosesway{from{rotate:-1.6deg}to{rotate:1.8deg}}
+@media (max-width:720px){#rose-field .rose{opacity:.34}#rose-field .vine-stroke,#rose-field .leaf{opacity:.3}}
+@media (prefers-reduced-motion:reduce){#rose-field .rose{animation:none}}
 .bloom{pointer-events:none}
 .bloom-rings{animation:bloomspin 130s linear infinite;transform-box:fill-box;transform-origin:center}
 @keyframes bloomspin{to{transform:rotate(360deg)}}

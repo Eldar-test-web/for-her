@@ -19,8 +19,9 @@ function heartOutline(){
   s.bezierCurveTo(x+12,y+15.4,x+16,y+11,x+16,y+7);
   s.bezierCurveTo(x+16,y+7,x+16,y,x+10,y);
   s.bezierCurveTo(x+7,y,x+5,y+5,x+5,y+5);
-  // centre + scale: raw spans x -6..16, y 0..19 → centred, ~3.5 wide, upright
-  return s.getSpacedPoints(900).map(p=>[(p.x-5)*0.16,(p.y-9.5)*0.16]);
+  // centre + scale + flip upright: raw spans x -6..16, y 0..19
+  // (wide lobes at low y, tip at high y) → tip to the bottom, lobes on top
+  return s.getSpacedPoints(900).map(p=>[(p.x-5)*0.16,(9.5-p.y)*0.16]);
 }
 function inPoly(px,py,poly){
   let inside=false;
@@ -89,19 +90,18 @@ function build(canvas, { finalMode=false }={}){
     }
     return pts;
   }
-  // rim: words run along the edge, facing outward — the heart's profile
+  // rim: words run along the edge, facing outward — the heart's profile.
+  // outward = away from the shape centroid (robust to winding direction)
   function rimPoints(n){
     const pts=[]; const layers=5;
+    let cx=0, cy=0; outline.forEach(p=>{cx+=p[0];cy+=p[1];}); cx/=outline.length; cy/=outline.length;
     for(let i=0;i<n;i++){
       const o=outline[(rand()*outline.length)|0];
-      const a=outline[(rand()*outline.length)|0]; // tangent estimate via neighbours
-      const idx=outline.indexOf(o);
-      const p1=outline[(idx+3)%outline.length], p0=outline[(idx-3+outline.length)%outline.length];
-      let tx=p1[0]-p0[0], ty=p1[1]-p0[1];
-      const tl=Math.hypot(tx,ty)||1; tx/=tl; ty/=tl;
-      const nx=ty, ny=-tx; // outward-ish 2D normal
+      let nx=o[0]-cx, ny=(o[1]-cy);
+      const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
+      let tx=-ny, ty=nx; // tangent along the edge
       const z=-DEPTH + (i%layers)/(layers-1)*DEPTH*2;
-      pts.push({p:[o[0]+nx*0.02, o[1]+0.1+ny*0.02, z], t:[tx,ty], n:[nx,ny,0]});
+      pts.push({p:[o[0]+nx*0.02, o[1]+ny*0.02, z], t:[tx,ty], n:[nx,ny,0]});
     }
     return pts;
   }
@@ -176,24 +176,24 @@ function build(canvas, { finalMode=false }={}){
   // front: dense field of I LOVE YOU with larger LOVE accents
   const nF=front.length, nAcc=Math.round(nF*0.14);
   const frontMain=front.slice(nAcc), frontAcc=front.slice(0,nAcc);
-  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texPhrase,...matOpts}), frontMain, 0.40, 0.075, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texLove,...matOpts}), frontAcc, 0.34, 0.064, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texPhrase,...matOpts}), back, 0.40, 0.075, -1);
+  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texPhrase,...matOpts}), frontMain, 0.50, 0.094, 1);
+  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texLove,...matOpts}), frontAcc, 0.42, 0.079, 1);
+  fillFace(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texPhrase,...matOpts}), back, 0.50, 0.094, -1);
   // rim: LOVE / YOU alternating around the profile
   const rimL1=rimPts.filter((_,i)=>i%2===0), rimL2=rimPts.filter((_,i)=>i%2!==0);
-  fillRim(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texLove,...matOpts}), rimL1, 0.30, 0.056);
-  fillRim(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texYou,...matOpts}), rimL2, 0.27, 0.051);
+  fillRim(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texLove,...matOpts}), rimL1, 0.36, 0.068);
+  fillRim(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:texYou,...matOpts}), rimL2, 0.33, 0.062);
 
-  // ---- alive, calm, and facing her ----
-  let tx=0,ty=0,mx=0,my=0,dy=0,tdy=0,dx=0,tdx=0,pulse=0;
+  // ---- alive and calm: slow self-rotation + inertial drag ----
+  let tx=0,ty=0,mx=0,my=0,spin=0,spinV=0;
   let visible=true; const t0=performance.now();
   let camZ=cam.position.z, camTarget=Z_REST, intro=0;
   addEventListener('pointermove',e=>{tx=(e.clientX/innerWidth-.5)*2;ty=(e.clientY/innerHeight-.5)*2},{passive:true});
-  let dragging=false,lx=0,ly=0;
+  let dragging=false,lx=0;
   canvas.style.touchAction='pan-y'; canvas.style.cursor='grab';
-  canvas.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;canvas.style.cursor='grabbing'});
+  canvas.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;canvas.style.cursor='grabbing'});
   addEventListener('pointermove',e=>{
-    if(!dragging)return; tdy+=(e.clientX-lx)*0.005; tdx+=(e.clientY-ly)*0.003; lx=e.clientX; ly=e.clientY;
+    if(!dragging)return; spinV+=(e.clientX-lx)*0.0045; lx=e.clientX;
   },{passive:true});
   addEventListener('pointerup',()=>{dragging=false;canvas.style.cursor='grab'});
   canvas.addEventListener('click',()=>{ pulse=1; rimL.intensity=1.3; setTimeout(()=>rimL.intensity=0.6,900);
@@ -221,7 +221,7 @@ function build(canvas, { finalMode=false }={}){
   }
   resize(); addEventListener('resize',resize);
 
-  let raf=0;
+  let raf=0, pulse=0;
   function tick(now){
     raf=requestAnimationFrame(tick);
     if(!visible) return;
@@ -229,12 +229,12 @@ function build(canvas, { finalMode=false }={}){
     intro=Math.min(1,intro+0.0028);
     const ease=intro*intro*(3-2*intro);
     mx+=(tx-mx)*0.03; my+=(ty-my)*0.03;
-    dy+=(tdy-dy)*0.06; dx+=(tdx-dx)*0.06; tdy*=0.93; tdx*=0.93;
-    pulse*=0.95;
     const slow=reduced?0:1;
-    // gentle sway — it faces her, never turns its back
-    group.rotation.y=Math.sin(t*0.18)*0.20*slow + mx*0.22 + dy;
-    group.rotation.x=Math.sin(t*0.42)*0.045*slow + my*0.09 + dx;
+    // slow self-rotation (~one turn per 30s) + flick-to-spin inertia + cursor breath
+    spinV*=0.96; spin+=((finalMode?0.16:0.21)*slow + spinV + mx*0.02);
+    pulse*=0.95;
+    group.rotation.y=spin;
+    group.rotation.x=Math.sin(t*0.42)*0.05*slow + my*0.08;
     group.position.y=Math.sin(t*0.65)*0.2*slow;
     const s=1+pulse*0.025*Math.sin(t*6);
     group.scale.set(s,s,s);
