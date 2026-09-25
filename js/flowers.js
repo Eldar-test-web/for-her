@@ -148,13 +148,27 @@
     });
     const La=vA.getTotalLength(), Lb=vB.getTotalLength();
     const at=(path,L,t)=>{ const p=path.getPointAtLength(t*L); return [p.x,p.y]; };
-    // blooms grow out of vine A
-    let [ax1,ay1]=at(vA,La,0.30); swayWrap(root,ax1,ay1-40,-8,1,9).appendChild(bloom(105));
-    let [ax2,ay2]=at(vA,La,0.62); swayWrap(root,ax2,ay2-40,6,0.9,10).appendChild(bloom(88));
-    let [ax3,ay3]=at(vA,La,0.88); swayWrap(root,ax3+30,ay3-30,10,0.5,8).appendChild(bud(30));
+    // blooms grow out of vine A — each turned a different way
+    let [ax1,ay1]=at(vA,La,0.22); swayWrap(root,ax1-46,ay1-40,-22,1.05,9).appendChild(bloom(110));
+    let [ax2,ay2]=at(vA,La,0.45); swayWrap(root,ax2+42,ay2-38,14,0.9,10).appendChild(bloom(88));
+    let [ax4,ay4]=at(vA,La,0.58); swayWrap(root,ax4-40,ay4-30,-6,0.7,7).appendChild(bloom(66));
+    let [ax3,ay3]=at(vA,La,0.82); swayWrap(root,ax3+34,ay3-34,24,0.5,8).appendChild(bud(30));
+    let [ax5,ay5]=at(vA,La,0.95); swayWrap(root,ax5-28,ay5-20,-32,0.42,11).appendChild(bud(24));
     // blooms grow out of vine B
-    let [bx1,by1]=at(vB,Lb,0.35); swayWrap(root,bx1,by1-40,8,0.95,11).appendChild(bloom(100));
-    let [bx2,by2]=at(vB,Lb,0.72); swayWrap(root,bx2,by2-40,-10,0.55,9).appendChild(bud(32));
+    let [bx1,by1]=at(vB,Lb,0.28); swayWrap(root,bx1+44,by1-40,18,1,11).appendChild(bloom(104));
+    let [bx3,by3]=at(vB,Lb,0.52); swayWrap(root,bx3-42,by3-36,-14,0.75,9).appendChild(bloom(72));
+    let [bx2,by2]=at(vB,Lb,0.74); swayWrap(root,bx2+30,by2-30,30,0.55,9).appendChild(bud(32));
+    let [bx4,by4]=at(vB,Lb,0.90); swayWrap(root,bx4-24,by4-24,-26,0.45,10).appendChild(bud(24));
+    // a third short shoot, bottom-right
+    const vC=E('path',{d:'M1470 905 C 1360 880, 1310 800, 1330 720',
+      fill:'none', stroke:'#2C3A24','stroke-width':5,'stroke-linecap':'round'},root);
+    const Lc=vC.getTotalLength();
+    [0.3,0.6].forEach((t,i)=>{
+      const p=vC.getPointAtLength(t*Lc);
+      leaf(root,p.x,p.y,50,i?-30:28);
+    });
+    const pc=vC.getPointAtLength(0.85*Lc);
+    swayWrap(root,pc.x-10,pc.y-40,12,0.8,8).appendChild(bloom(78));
     // trailing shoot across the top
     const vT=E('path',{d:'M560 -10 C 700 50, 830 20, 960 55 C 1040 75, 1100 60, 1180 80',
       fill:'none', stroke:'#2A3623','stroke-width':5,'stroke-linecap':'round'},root);
@@ -171,14 +185,14 @@
     defsFor(esvg,eroot);
     E('path',{d:'M-20 290 C 300 250, 600 300, 900 265 C 1100 245, 1280 270, 1460 250',
       fill:'none', stroke:'#2C3A24','stroke-width':5,'stroke-linecap':'round'},eroot);
-    [[380,215,82],[720,185,96],[1060,220,78]].forEach(([x,y,R],i)=>{
-      const w=swayWrap(eroot,x,y,(i-1)*6,1,8+i*1.5);
+    [[300,225,74,-14],[560,195,88,8],[810,175,94,-4],[1050,200,80,16],[1290,225,70,-18]].forEach(([x,y,R,tilt],i)=>{
+      const w=swayWrap(eroot,x,y,tilt,1,8+i*1.3);
       E('path',{d:`M0 40 C 6 90, -4 120, 2 160`, stroke:'#2A3623','stroke-width':6,
         fill:'none','stroke-linecap':'round'},w);
       const b=G(); w.appendChild(b); b.appendChild(lily(R));
       leaf(w,-26,96,52,-32); leaf(w,26,110,48,30);
     });
-    const wb=swayWrap(eroot,180,250,10,0.8,7); wb.appendChild(bud(26));
-    const wb2=swayWrap(eroot,1260,245,-12,0.8,8); wb2.appendChild(bud(26));
+    const wb=swayWrap(eroot,120,255,16,0.8,7); wb.appendChild(bud(26));
+    const wb2=swayWrap(eroot,1360,250,-16,0.8,8); wb2.appendChild(bud(26));
   }
 })();

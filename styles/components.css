@@ -30,15 +30,33 @@
 .gift-letter-sign{font-family:var(--serif);font-style:italic;color:var(--t2);font-size:1.2rem}
 /* cake — plays itself */
 .cake-stage{display:flex;flex-direction:column;align-items:center;gap:30px;margin-top:36px}
-.cake{position:relative;width:280px;height:300px}
-.plate{position:absolute;bottom:18px;left:10px;right:10px;height:12px;background:#0d090b;border:1px solid rgba(201,168,122,.25);border-radius:999px}
-.tier{position:absolute;left:50%;transform:translateX(-50%);border:1px solid rgba(201,168,122,.22)}
-.tier-base{bottom:30px;width:220px;height:84px;background:linear-gradient(180deg,#2B1A1E,#171013);border-radius:8px}
-.tier-base::after,.tier-mid::after,.tier-top::after{content:"";position:absolute;top:0;left:0;right:0;height:16px;background:linear-gradient(180deg,#E9DCCB,#CBB9A4);opacity:.92;border-radius:8px 8px 0 0}
-.tier-mid{bottom:112px;width:164px;height:66px;background:linear-gradient(180deg,#251419,#120C0E);border-radius:8px}
-.tier-top{bottom:176px;width:112px;height:52px;background:linear-gradient(180deg,#2A181C,#140D0F);border-radius:8px}
-.candle{position:absolute;bottom:228px;left:50%;width:10px;height:56px;transform:translateX(-50%);background:linear-gradient(180deg,#F3ECE7,#B9AAA4);border-radius:4px}
-.flame-wrap{position:absolute;bottom:288px;left:50%;transform:translateX(-50%);cursor:pointer}
+.cake{position:relative;width:300px;height:320px}
+.plate{position:absolute;bottom:16px;left:0;right:0;height:16px;background:radial-gradient(ellipse at 50% 35%,#1E1418,#0B080A 75%);
+  border:1px solid rgba(201,168,122,.35);border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.6),inset 0 1px 2px rgba(233,220,203,.25)}
+.plate .petal{position:absolute;top:-7px;width:16px;height:10px;background:radial-gradient(ellipse at 40% 35%,#8B3A48,#3E1620);
+  border-radius:60% 40% 55% 45%;opacity:.95}
+.plate .p1{left:22%;transform:rotate(-24deg)}.plate .p2{right:20%;transform:rotate(28deg)}
+.plate .p3{left:48%;transform:rotate(8deg) scale(.7)}
+.tier{position:absolute;left:50%;transform:translateX(-50%);border:1px solid rgba(201,168,122,.25);
+  box-shadow:inset 6px 0 12px rgba(0,0,0,.45),inset -6px 0 12px rgba(0,0,0,.45)}
+.tier-base{bottom:32px;width:220px;height:86px;background:linear-gradient(180deg,transparent 32px,rgba(201,168,122,.55) 32px,rgba(201,168,122,.55) 35px,transparent 35px),linear-gradient(180deg,#312026,#181114);border-radius:10px}
+.tier-base::after,.tier-mid::after,.tier-top::after{content:"";position:absolute;top:0;left:0;right:0;height:17px;background:linear-gradient(180deg,#F0E3D2,#C9B49A);opacity:.94;border-radius:10px 10px 0 0}
+.tier-mid{bottom:116px;width:164px;height:68px;background:linear-gradient(180deg,transparent 28px,rgba(201,168,122,.55) 28px,rgba(201,168,122,.55) 31px,transparent 31px),linear-gradient(180deg,#2B1820,#130D10);border-radius:10px}
+.tier-top{bottom:182px;width:112px;height:54px;background:linear-gradient(180deg,transparent 26px,rgba(201,168,122,.55) 26px,rgba(201,168,122,.55) 29px,transparent 29px),linear-gradient(180deg,#301C22,#150E11);border-radius:10px}
+.tier .drips{position:absolute;top:15px;left:8px;right:8px;height:12px;
+  background-image:radial-gradient(circle at 10px -3px,#EFE0CB 10px,transparent 11px);
+  background-size:22px 12px;background-repeat:repeat-x;opacity:.9}
+.candle{position:absolute;bottom:236px;left:50%;width:11px;height:58px;transform:translateX(-50%);
+  background:linear-gradient(90deg,#8f8078,#F3ECE7 35%,#F3ECE7 65%,#8f8078);border-radius:5px;
+  box-shadow:0 0 12px rgba(245,200,126,.25)}
+.candle .wax{position:absolute;top:-4px;left:-2px;width:15px;height:10px;background:#F3ECE7;border-radius:60% 40% 55% 45%}
+.candle .wick{position:absolute;top:-9px;left:50%;width:2px;height:7px;transform:translateX(-50%);background:#2A1E16;border-radius:2px}
+.halo{position:absolute;bottom:262px;left:50%;width:150px;height:150px;transform:translateX(-50%);
+  background:radial-gradient(circle,rgba(255,214,160,.4),rgba(255,180,120,.12) 45%,transparent 70%);
+  filter:blur(4px);animation:halo 1.6s ease-in-out infinite;transition:opacity 1.5s}
+@keyframes halo{0%,100%{opacity:.75;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.07)}}
+.cake:has(.flame.out) .halo{opacity:0}
+.flame-wrap{position:absolute;bottom:296px;left:50%;transform:translateX(-50%);cursor:pointer;z-index:2}
 .flame{width:16px;height:28px;background:radial-gradient(circle at 50% 70%,#fff6e3 0%,#f5c87e 45%,#b96a3a 75%,transparent 78%);border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;transform-origin:50% 100%;animation:flick 1.6s ease-in-out infinite;filter:blur(.2px)}
 @keyframes flick{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.08,1.14) rotate(2deg)}}
 .flame.out{opacity:0;transform:scale(.2);transition:all .8s}
@@ -48,7 +66,7 @@
 .tier .dots{position:absolute;left:14px;right:14px;bottom:12px;height:6px;
   background-image:radial-gradient(circle,rgba(201,168,122,.75) 1.6px,transparent 1.8px);
   background-size:15px 6px;background-repeat:repeat-x}
-.cake-bloom{position:absolute;bottom:196px;left:50%;width:44px;margin-left:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.cake-bloom{position:absolute;bottom:196px;left:50%;width:110px;margin-left:-8px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55))}
 .wish-line{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--t2);opacity:.55}
 .wish-line.kept{color:var(--t0);opacity:1;transition:all 2s}
-@media (prefers-reduced-motion:reduce){.flame{animation:none}.bloom-rings{animation:none}#intro-veil{transition:none}}
+@media (prefers-reduced-motion:reduce){.flame{animation:none}.halo{animation:none}#intro-veil{transition:none}}

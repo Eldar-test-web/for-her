@@ -77,7 +77,7 @@ function build(canvas, { finalMode=false }={}){
   let minX=9,maxX=-9,minY=9,maxY=-9;
   outline.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);});
   const DEPTH=0.8;
-  const N = isMobile? {front:320, side:700, back:180} : {front:800, side:1900, back:450};
+  const N = isMobile? {front:320, side:500, back:180} : {front:800, side:700, back:450};
 
   function facePoints(n, z, dir){
     const pts=[]; let guard=0;
@@ -99,9 +99,9 @@ function build(canvas, { finalMode=false }={}){
   // side walls: the full depth of the heart, tiled with I LOVE YOU.
   // outward = away from the shape centroid (robust to winding direction)
   function sidePoints(){
-    const pts=[]; const layers=isMobile?4:6;
+    const pts=[]; const layers=isMobile?3:4;
     let cx=0, cy=0; outline.forEach(p=>{cx+=p[0];cy+=p[1];}); cx/=outline.length; cy/=outline.length;
-    const step=isMobile?4:2;
+    const step=isMobile?8:6; // few, well-spaced columns — no spaghetti
     for(let i=0;i<outline.length;i+=step){
       const o=outline[i];
       let nx=o[0]-cx, ny=(o[1]-cy);
@@ -189,7 +189,7 @@ function build(canvas, { finalMode=false }={}){
   // faces + full side walls — everything reads I LOVE YOU
   fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), front, 0.62, 0.117, 1);
   fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.62, 0.117, -1);
-  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), sides, 0.34, 0.075);
+  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), sides, 0.46, 0.115);
 
   // golden micro-dust suspended inside the heart — fills the gaps between words
   let dust=null;

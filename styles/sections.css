@@ -80,9 +80,9 @@ h2.huge{font-size:clamp(3.2rem,9vw,6rem);margin:.4em 0}
 .finale-stage canvas{position:relative;z-index:1}
 .colophon{margin-top:44px;color:var(--t2);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase}
 .colophon a{color:var(--t1);text-decoration:none;border-bottom:1px solid rgba(201,168,122,.4)}
-/* the very bottom: a field of dark lilies */
-#lily-end{position:relative;z-index:1;min-height:62vh;display:flex;align-items:flex-end;justify-content:center;
-  padding:0 24px 8vh;background:url("../assets/lily-field.jpg") center 70%/cover no-repeat #0D090B}
+/* the very bottom: lilies rising from the dark */
+#lily-end{position:relative;z-index:1;min-height:64vh;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 24px 8vh;background:radial-gradient(60% 45% at 50% 100%,rgba(74,31,43,.35),transparent 70%),var(--bg0);overflow:hidden}
 #lily-end::before{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,var(--bg0) 0%,rgba(10,8,9,.55) 30%,rgba(10,8,9,.15) 60%,rgba(10,8,9,.55) 100%)}
 #lily-end .colophon{position:relative;margin:0;text-align:center}
