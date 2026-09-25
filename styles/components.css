@@ -46,17 +46,25 @@
 .tier .drips{position:absolute;top:15px;left:8px;right:8px;height:12px;
   background-image:radial-gradient(circle at 10px -3px,#EFE0CB 10px,transparent 11px);
   background-size:22px 12px;background-repeat:repeat-x;opacity:.9}
-.candle{position:absolute;bottom:236px;left:50%;width:11px;height:58px;transform:translateX(-50%);
-  background:linear-gradient(90deg,#8f8078,#F3ECE7 35%,#F3ECE7 65%,#8f8078);border-radius:5px;
+.candle-unit{position:absolute;z-index:3;transform:translateX(-50%)}
+.u-top{left:50%;bottom:232px}.u-m1{left:calc(50% - 36px);bottom:180px}.u-m2{left:calc(50% + 36px);bottom:180px}
+.u-b1{left:calc(50% - 62px);bottom:114px}.u-b2{left:calc(50% + 62px);bottom:114px}
+.candle-unit .candle{position:relative;margin:0 auto;border-radius:5px;
+  background:linear-gradient(90deg,#8f8078,#F3ECE7 35%,#F3ECE7 65%,#8f8078);
   box-shadow:0 0 12px rgba(245,200,126,.25)}
+.u-top .candle{width:11px;height:46px}.u-m1 .candle,.u-m2 .candle{width:10px;height:40px}
+.u-b1 .candle,.u-b2 .candle{width:10px;height:38px}
 .candle .wax{position:absolute;top:-4px;left:-2px;width:15px;height:10px;background:#F3ECE7;border-radius:60% 40% 55% 45%}
 .candle .wick{position:absolute;top:-9px;left:50%;width:2px;height:7px;transform:translateX(-50%);background:#2A1E16;border-radius:2px}
-.halo{position:absolute;bottom:262px;left:50%;width:150px;height:150px;transform:translateX(-50%);
+.candle-unit .halo{position:absolute;bottom:24px;left:50%;width:90px;height:90px;transform:translateX(-50%);
   background:radial-gradient(circle,rgba(255,214,160,.4),rgba(255,180,120,.12) 45%,transparent 70%);
-  filter:blur(4px);animation:halo 1.6s ease-in-out infinite;transition:opacity 1.5s}
-@keyframes halo{0%,100%{opacity:.75;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.07)}}
-.cake:has(.flame.out) .halo{opacity:0}
-.flame-wrap{position:absolute;bottom:296px;left:50%;transform:translateX(-50%);cursor:pointer;z-index:2}
+  filter:blur(4px);animation:halo 1.6s ease-in-out infinite;transition:opacity 1.2s}
+.u-top .halo{width:120px;height:120px}
+@keyframes halo{0%,100%{opacity:.75}50%{opacity:1}}
+.candle-unit:has(.flame.out) .halo{opacity:0}
+.candle-unit .flame-wrap{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);cursor:pointer;margin-bottom:2px}
+.u-m1 .flame,.u-m2 .flame{width:14px;height:24px}
+.u-b1 .flame,.u-b2 .flame{width:13px;height:22px}
 .flame{width:16px;height:28px;background:radial-gradient(circle at 50% 70%,#fff6e3 0%,#f5c87e 45%,#b96a3a 75%,transparent 78%);border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;transform-origin:50% 100%;animation:flick 1.6s ease-in-out infinite;filter:blur(.2px)}
 @keyframes flick{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.08,1.14) rotate(2deg)}}
 .flame.out{opacity:0;transform:scale(.2);transition:all .8s}

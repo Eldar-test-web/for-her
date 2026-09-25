@@ -76,8 +76,8 @@ function build(canvas, { finalMode=false }={}){
   const outline=heartOutline();
   let minX=9,maxX=-9,minY=9,maxY=-9;
   outline.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);});
-  const DEPTH=0.8;
-  const N = isMobile? {front:320, side:500, back:180} : {front:800, side:700, back:450};
+  const DEPTH=1.0; // true volumetric solid: domed faces + full walls + inner body
+  const N = isMobile? {front:300, wall:450, back:170, fill:250} : {front:700, wall:1200, back:400, fill:800};
 
   function facePoints(n, z, dir){
     const pts=[]; let guard=0;
@@ -96,29 +96,50 @@ function build(canvas, { finalMode=false }={}){
     }
     return pts;
   }
-  // side walls: the full depth of the heart, tiled with I LOVE YOU.
-  // outward = away from the shape centroid (robust to winding direction)
-  function sidePoints(){
-    const pts=[]; const layers=isMobile?3:4;
+  // wall rings: the full depth tiled layer by layer, each layer a scaled
+  // copy of the verified silhouette — the solid reads from every angle
+  function wallPoints(){
+    const pts=[]; const layers=isMobile?7:10;
     let cx=0, cy=0; outline.forEach(p=>{cx+=p[0];cy+=p[1];}); cx/=outline.length; cy/=outline.length;
-    const step=isMobile?8:6; // few, well-spaced columns — no spaghetti
-    for(let i=0;i<outline.length;i+=step){
-      const o=outline[i];
-      let nx=o[0]-cx, ny=(o[1]-cy);
-      const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
-      const tx=-ny, ty=nx; // words run along the edge
-      for(let L=0;L<layers;L++){
-        const z=-DEPTH+(L+0.5)/layers*DEPTH*2;
-        pts.push({p:[o[0]+nx*0.03, o[1]+0.1+ny*0.03, z], t:[tx,ty], n:[nx,ny,0]});
+    const step=isMobile?9:6;
+    for(let L=0;L<layers;L++){
+      const z=-DEPTH+(L+0.5)/layers*DEPTH*2;
+      const s=Math.sqrt(Math.max(0.12,1-Math.pow(z/(DEPTH*1.12),2)));
+      for(let i=0;i<outline.length;i+=step){
+        const o=outline[i];
+        const px=cx+(o[0]-cx)*s, py=cy+(o[1]-cy)*s+0.1;
+        let nx=o[0]-cx, ny=(o[1]-cy);
+        const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
+        pts.push({p:[px+nx*0.03, py+ny*0.03, z], t:[-ny,nx], n:[nx,ny,(z/DEPTH)*0.7]});
       }
+    }
+    return pts;
+  }
+  // inner body: random-orientation words filling the solid, so oblique
+  // views never look hollow — darker, like the inside of the object
+  function fillerPoints(n){
+    const pts=[];
+    let cx=0, cy=0; outline.forEach(p=>{cx+=p[0];cy+=p[1];}); cx/=outline.length; cy/=outline.length;
+    let guard=0;
+    while(pts.length<n && guard<n*80){
+      guard++;
+      const z=(rand()*2-1)*DEPTH*0.85;
+      const s=Math.sqrt(Math.max(0.1,1-Math.pow(z/(DEPTH*1.12),2)));
+      const x=minX+rand()*(maxX-minX), y=minY+rand()*(maxY-minY);
+      const ux=cx+(x-cx)/s, uy=cy+(y-cy)/s;
+      if(!inPoly(ux,uy,outline)) continue;
+      const th=rand()*Math.PI*2, ph=Math.acos(2*rand()-1);
+      pts.push({p:[x,y+0.1,z],
+        n:[Math.sin(ph)*Math.cos(th),Math.sin(ph)*Math.sin(th),Math.cos(ph)], inner:true});
     }
     return pts;
   }
 
   const front=facePoints(N.front, DEPTH, 1);
   const back=facePoints(N.back, -DEPTH, -1);
-  const sideAll=sidePoints(); // stride evenly so no stretch of wall stays bare
-  const sides=sideAll.filter((_,i)=>i%Math.max(1,Math.round(sideAll.length/N.side))===0);
+  const wallsAll=wallPoints();
+  const walls=wallsAll.filter((_,i)=>i%Math.max(1,Math.round(wallsAll.length/N.wall))===0);
+  const filler=fillerPoints(N.fill);
 
   const texPhrase=wordTexture('I LOVE YOU', 108);
 
@@ -130,7 +151,8 @@ function build(canvas, { finalMode=false }={}){
 
   // colour-coded words: mostly bright ivory, some champagne, some blush —
   // neighbours differ, so single words can be picked out
-  function shade(k, facing){
+  function shade(k, facing, inner){
+    if(inner){ cc.setHex(0x6e3a44); return cc; }
     if(facing>=0) cc.copy(rose).lerp(ivory,0.85);
     else cc.copy(rose).multiplyScalar(0.7);
     if(k%7===3) cc.copy(champ);
@@ -153,7 +175,7 @@ function build(canvas, { finalMode=false }={}){
       M.makeBasis(ax.multiplyScalar(ww), ay.multiplyScalar(hh), bz);
       M.setPosition(P);
       m.setMatrixAt(k,M);
-      m.setColorAt(k,shade(k,dir));
+      m.setColorAt(k,shade(k,dir,s.inner));
     });
     m.instanceMatrix.needsUpdate=true;
     if(m.instanceColor) m.instanceColor.needsUpdate=true;
@@ -186,10 +208,11 @@ function build(canvas, { finalMode=false }={}){
   const matOpts={ roughness:0.82, metalness:0.0, alphaTest:0.3, side:THREE.DoubleSide,
     emissive:0xffffff, emissiveIntensity:0.42 }; // letters stay readable in shadow
   function stdMat(tex){ return new THREE.MeshStandardMaterial({...matOpts, map:tex, emissiveMap:tex}); }
-  // faces + full side walls — everything reads I LOVE YOU
+  // closed solid, everything reads I LOVE YOU: faces + walls + inner body
   fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), front, 0.62, 0.117, 1);
   fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.62, 0.117, -1);
-  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), sides, 0.46, 0.115);
+  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), walls, 0.44, 0.11);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), filler, 0.5, 0.094, 0);
 
   // golden micro-dust suspended inside the heart — fills the gaps between words
   let dust=null;

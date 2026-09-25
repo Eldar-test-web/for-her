@@ -1,7 +1,6 @@
 /* Gift opens on scroll — nothing is locked behind a click.
-   Cake plays its quiet scene on scroll. Touching the objects is optional delight only. */
+   Every candle dies on its own: hover/touch one flame and only it goes out. */
 (function(){
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const box=document.getElementById('gift-box');
   if(box){
     // opens by itself as she arrives
@@ -14,21 +13,21 @@
       try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}
     });
   }
-  const flame=document.getElementById('flame'), smoke=document.getElementById('smoke'),
-        line=document.getElementById('wish-line'), cake=document.querySelector('.cake');
-  let out=false;
-  function blowOut(){
-    if(out||!flame) return; out=true;
-    flame.classList.add('out'); smoke?.classList.add('show');
-    line?.classList.add('kept');
-    try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}
+  const units=[...document.querySelectorAll('.candle-unit')];
+  const line=document.getElementById('wish-line');
+  function checkAll(){
+    if(units.length && units.every(u=>u.dataset.out==='1')) line?.classList.add('kept');
   }
-  if(cake){
-    // scene plays itself: lit while she reads, then the wish is kept
-    new IntersectionObserver((es,obs)=>es.forEach(e=>{
-      if(e.isIntersecting && !reduced){ setTimeout(blowOut, 7000); obs.disconnect(); }
-      else if(e.isIntersecting && reduced){ blowOut(); obs.disconnect(); }
-    }),{threshold:0.5}).observe(cake);
-    flame?.addEventListener('click',blowOut); // optional early wish
-  }
+  units.forEach(u=>{
+    const fl=u.querySelector('.flame'), sm=u.querySelector('.smoke');
+    function out(){
+      if(!fl || u.dataset.out==='1') return;
+      u.dataset.out='1';
+      fl.classList.add('out'); sm?.classList.add('show');
+      try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}
+      checkAll();
+    }
+    u.addEventListener('pointerenter',out);          // mouse passes over → only this one
+    u.querySelector('.flame-wrap')?.addEventListener('click',out); // touch: tap the flame
+  });
 })();
