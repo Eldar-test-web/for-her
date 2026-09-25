@@ -32,13 +32,13 @@ function inPoly(px,py,poly){
   return inside;
 }
 
-function wordTexture(word, px=92){
+function wordTexture(word, px=118){
   const c=document.createElement('canvas'); c.width=1024; c.height=192;
   const g=c.getContext('2d');
   g.clearRect(0,0,1024,192);
-  g.font=`500 ${px}px Georgia, 'Times New Roman', serif`;
+  g.font=`600 ${px}px Georgia, 'Times New Roman', serif`;
   g.textAlign='center'; g.textBaseline='middle';
-  try{ g.letterSpacing='6px'; }catch(e){}
+  try{ g.letterSpacing='10px'; }catch(e){}
   g.fillStyle='#ffffff';
   g.fillText(word,512,100);
   const t=new THREE.CanvasTexture(c);
@@ -65,7 +65,8 @@ function build(canvas, { finalMode=false }={}){
   cam.position.set(0, 0.1, finalMode? 8.2 : 13.5);
 
   scene.add(new THREE.AmbientLight(0x3a2530, 0.9));
-  const key=new THREE.DirectionalLight(0xffd9b0, 1.5); key.position.set(4,6,8); scene.add(key);
+  const key=new THREE.DirectionalLight(0xffd9b0, 1.8); key.position.set(4,6,8); scene.add(key);
+  const frontFill=new THREE.DirectionalLight(0xffe9d0, 0.55); frontFill.position.set(-1,0.5,10); scene.add(frontFill);
   const rimL=new THREE.DirectionalLight(0x9a5a64, 0.6); rimL.position.set(-7,2,-6); scene.add(rimL);
   const low=new THREE.DirectionalLight(0x4a202b, 0.5); low.position.set(0,-6,3); scene.add(low);
 
@@ -75,14 +76,14 @@ function build(canvas, { finalMode=false }={}){
   const outline=heartOutline();
   let minX=9,maxX=-9,minY=9,maxY=-9;
   outline.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);});
-  const DEPTH=0.65;
-  const N = isMobile? {front:700, rim:450, back:250} : {front:2400, rim:1800, back:800};
+  const DEPTH=0.8;
+  const N = isMobile? {front:520, rim:380, back:200} : {front:1700, rim:1500, back:600};
 
   function facePoints(n, z, dir){
     const pts=[]; let guard=0;
     let ccx=0, ccy=0; outline.forEach(p=>{ccx+=p[0];ccy+=p[1];}); ccx/=outline.length; ccy/=outline.length;
     let maxR=0.001; outline.forEach(p=>{maxR=Math.max(maxR,Math.hypot(p[0]-ccx,p[1]-ccy));});
-    const BULGE=0.42; // convex cushion — the face curves toward her
+    const BULGE=0.55; // deep convex cushion — the face curves toward her
     while(pts.length<n && guard<n*60){
       guard++;
       const x=minX+rand()*(maxX-minX), y=minY+rand()*(maxY-minY);
@@ -115,9 +116,9 @@ function build(canvas, { finalMode=false }={}){
   const back=facePoints(N.back, -DEPTH, -1);
   const rimPts=rimPoints(N.rim);
 
-  const texPhrase=wordTexture('I LOVE YOU', 84);
-  const texLove=wordTexture('LOVE', 108);
-  const texYou=wordTexture('YOU', 108);
+  const texPhrase=wordTexture('I LOVE YOU', 108);
+  const texLove=wordTexture('LOVE', 132);
+  const texYou=wordTexture('YOU', 132);
 
   const M=new THREE.Matrix4();
   const bx=new THREE.Vector3(), by=new THREE.Vector3(), bz=new THREE.Vector3(), P=new THREE.Vector3();
@@ -125,8 +126,8 @@ function build(canvas, { finalMode=false }={}){
   const cc=new THREE.Color();
 
   function shade(k, facing){
-    if(facing>=0) cc.copy(rose).lerp(ivory,0.55);
-    else cc.copy(rose).multiplyScalar(0.6);
+    if(facing>=0) cc.copy(rose).lerp(ivory,0.75);
+    else cc.copy(rose).multiplyScalar(0.7);
     if(k%8===0) cc.lerp(champ,0.5);
     return cc;
   }
@@ -178,18 +179,18 @@ function build(canvas, { finalMode=false }={}){
   }
 
   const matOpts={ roughness:0.82, metalness:0.0, alphaTest:0.3, side:THREE.DoubleSide,
-    emissive:0xffffff, emissiveIntensity:0.30 }; // letters stay readable in shadow
+    emissive:0xffffff, emissiveIntensity:0.42 }; // letters stay readable in shadow
   function stdMat(tex){ return new THREE.MeshStandardMaterial({...matOpts, map:tex, emissiveMap:tex}); }
   // front: dense field of I LOVE YOU with larger LOVE accents
   const nF=front.length, nAcc=Math.round(nF*0.14);
   const frontMain=front.slice(nAcc), frontAcc=front.slice(0,nAcc);
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), frontMain, 0.50, 0.094, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texLove), frontAcc, 0.42, 0.079, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.50, 0.094, -1);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), frontMain, 0.60, 0.113, 1);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texLove), frontAcc, 0.50, 0.094, 1);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.60, 0.113, -1);
   // rim: LOVE / YOU alternating around the profile
   const rimL1=rimPts.filter((_,i)=>i%2===0), rimL2=rimPts.filter((_,i)=>i%2!==0);
-  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texLove), rimL1, 0.36, 0.068);
-  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texYou), rimL2, 0.33, 0.062);
+  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texLove), rimL1, 0.40, 0.075);
+  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texYou), rimL2, 0.37, 0.069);
 
   // golden micro-dust suspended inside the heart — fills the gaps between words
   let dust=null;
@@ -221,7 +222,7 @@ function build(canvas, { finalMode=false }={}){
   // ---- alive and calm: slow self-rotation + inertial drag + hover bloom ----
   let tx=0,ty=0,mx=0,my=0,spin=0.6,spinV=0,hover=0;
   let visible=true, last=performance.now(); const t0=last;
-  let camZ=cam.position.z, camTarget=Z_REST, intro=0;
+  let camZ=cam.position.z, camTarget=Z_REST, camX=0, camY=0.1, intro=0;
   addEventListener('pointermove',e=>{tx=(e.clientX/innerWidth-.5)*2;ty=(e.clientY/innerHeight-.5)*2},{passive:true});
   let dragging=false,lx=0;
   canvas.style.touchAction='pan-y'; canvas.style.cursor='grab';
@@ -279,9 +280,14 @@ function build(canvas, { finalMode=false }={}){
     if(dust){ dust.rotation.y=-t*0.03; dust.material.opacity=0.42+0.14*Math.sin(t*1.2); }
     camZ+=(camTarget-camZ)*Math.min(1,dt*1.4);
     cam.position.z = finalMode? camZ : camZ + (1-ease)*5;
+    // gentle camera parallax — the lens breathes with her cursor, depth reads
+    camX+=((mx*0.7)-camX)*Math.min(1,dt*1.2);
+    camY+=((0.1-my*0.4)-camY)*Math.min(1,dt*1.2);
+    cam.position.x=camX; cam.position.y=camY;
+    cam.lookAt(0,0.1,0);
     renderer.render(scene,cam);
   }
-  if(reduced){ resize(); cam.position.z=Z_REST; group.rotation.y=0.25; renderer.render(scene,cam); }
+  if(reduced){ resize(); cam.position.z=Z_REST; group.rotation.y=0.25; cam.lookAt(0,0.1,0); renderer.render(scene,cam); }
   else tick(performance.now());
 
   if(!finalMode){
