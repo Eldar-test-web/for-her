@@ -1,81 +1,66 @@
-/* Premium dark roses, built petal by petal in code.
-   Layered cups, rim light, veined leaves, thorned stems, dew. */
+/* Dark roses climbing on winding vines + lilies for the finale.
+   Every bloom grows out of a vine; the rose heart sits dead-centre. */
 (function(){
   const NS='http://www.w3.org/2000/svg';
-  const root=document.getElementById('flower-root');
-  if(!root) return;
-  const svg=document.getElementById('flower-svg');
-  let seed=11;
+  let seed=23;
   const rnd=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
-
-  const defs=document.createElementNS(NS,'defs');
-  defs.innerHTML=
-    `<radialGradient id="petalG" cx="46%" cy="30%" r="80%">`+
-    `<stop offset="0%" stop-color="#B05768"/><stop offset="45%" stop-color="#732739"/>`+
-    `<stop offset="80%" stop-color="#3E1620"/><stop offset="100%" stop-color="#220C12"/></radialGradient>`+
-    `<radialGradient id="deepG" cx="50%" cy="35%" r="80%">`+
-    `<stop offset="0%" stop-color="#7C3040"/><stop offset="60%" stop-color="#471824"/>`+
-    `<stop offset="100%" stop-color="#1C090E"/></radialGradient>`+
-    `<radialGradient id="coreG" cx="50%" cy="42%" r="72%">`+
-    `<stop offset="0%" stop-color="#D98A97"/><stop offset="55%" stop-color="#7E2F3F"/>`+
-    `<stop offset="100%" stop-color="#2A0E14"/></radialGradient>`+
-    `<linearGradient id="leafG" x1="0" y1="0" x2="1" y2="1">`+
-    `<stop offset="0%" stop-color="#3A4D2D"/><stop offset="100%" stop-color="#141B11"/></linearGradient>`;
-  svg.insertBefore(defs, root);
-
   function E(n,attrs,parent){
     const e=document.createElementNS(NS,n);
     for(const k in attrs) e.setAttribute(k,attrs[k]);
-    (parent||root).appendChild(e); return e;
+    parent.appendChild(e); return e;
   }
+  function defsFor(svg,root){
+    const defs=document.createElementNS(NS,'defs');
+    defs.innerHTML=
+      `<radialGradient id="petalG" cx="46%" cy="30%" r="80%">`+
+      `<stop offset="0%" stop-color="#B05768"/><stop offset="45%" stop-color="#732739"/>`+
+      `<stop offset="80%" stop-color="#3E1620"/><stop offset="100%" stop-color="#220C12"/></radialGradient>`+
+      `<radialGradient id="deepG" cx="50%" cy="35%" r="80%">`+
+      `<stop offset="0%" stop-color="#7C3040"/><stop offset="60%" stop-color="#471824"/>`+
+      `<stop offset="100%" stop-color="#1C090E"/></radialGradient>`+
+      `<radialGradient id="coreG" cx="50%" cy="50%" r="65%">`+
+      `<stop offset="0%" stop-color="#E29AA5"/><stop offset="55%" stop-color="#7E2F3F"/>`+
+      `<stop offset="100%" stop-color="#2A0E14"/></radialGradient>`+
+      `<linearGradient id="leafG" x1="0" y1="0" x2="1" y2="1">`+
+      `<stop offset="0%" stop-color="#3A4D2D"/><stop offset="100%" stop-color="#141B11"/></linearGradient>`+
+      `<radialGradient id="lilyG" cx="50%" cy="30%" r="85%">`+
+      `<stop offset="0%" stop-color="#EFD9CC"/><stop offset="45%" stop-color="#C08388"/>`+
+      `<stop offset="80%" stop-color="#5E2233"/><stop offset="100%" stop-color="#2A1016"/></radialGradient>`;
+    svg.insertBefore(defs, root);
+  }
+
   // one cupped petal, base at 0,0 opening upward
-  function cup(parent,w,h,fill,stroke,sw){
+  function cup(parent,w,h,fill,stroke){
     E('path',{d:`M0 0 C ${-w} ${-h*0.28} ${-w*0.92} ${-h*0.95} ${-w*0.18} ${-h} `+
       `C ${-w*0.05} ${-h*0.72} ${w*0.05} ${-h*0.72} ${w*0.18} ${-h} `+
       `C ${w*0.92} ${-h*0.95} ${w} ${-h*0.28} 0 0 Z`,
-      fill, stroke,'stroke-width':sw,'stroke-linejoin':'round'},parent);
-    // fold shadow down the middle
+      fill, stroke,'stroke-width':Math.max(1,w*0.03),'stroke-linejoin':'round'},parent);
     E('path',{d:`M0 ${-h*0.08} C ${-w*0.1} ${-h*0.4} ${-w*0.08} ${-h*0.7} 0 ${-h*0.9}`,
       fill:'none', stroke:'#160608','stroke-width':Math.max(1,w*0.03), opacity:.55,'stroke-linecap':'round'},parent);
-    // rim light along the top edge
     E('path',{d:`M${-w*0.18} ${-h} C ${-w*0.05} ${-h*0.72} ${w*0.05} ${-h*0.72} ${w*0.18} ${-h}`,
       fill:'none', stroke:'#D89AA4','stroke-width':Math.max(1,w*0.022), opacity:.5,'stroke-linecap':'round'},parent);
   }
-  function rose(R){
-    const g=E('g',{class:'flw'});
-    // stem + thorns first (behind)
-    E('path',{d:`M0 ${R*0.55} C ${R*0.12} ${R*1.1} ${-R*0.1} ${R*1.5} ${R*0.05} ${R*2.1}`,
-      fill:'none', stroke:'#2A3623','stroke-width':R*0.075,'stroke-linecap':'round'},g);
-    for(let i=0;i<3;i++){
-      const t=0.35+i*0.25, sx=R*0.1*(1-t*1.4), sy=R*(0.55+t*1.4);
-      E('path',{d:`M${sx} ${sy} l ${R*0.09} ${-R*0.02} l ${-R*0.05} ${R*0.08} Z`, fill:'#1B2417'},g);
-    }
-    leaf(g,-R*0.02,R*1.35,R*0.75,-24); leaf(g,R*0.06,R*1.7,R*0.7,30);
+  // rose heart — concentric, exactly centred on (0,0) of its group
+  function roseHeart(parent,R){
+    const c=E('g',{transform:`translate(0 ${-R*0.34})`},parent);
     const ring=(n,rr,ww,hh,fill,stroke,off)=>{
       for(let i=0;i<n;i++){
-        const a=off+i*360/n+(rnd()-.5)*9;
-        const p=E('g',{transform:`rotate(${a.toFixed(1)}) translate(0 ${(-rr).toFixed(1)})`},g);
-        cup(p,ww,hh,fill,stroke,Math.max(1,R*0.012));
+        const p=E('g',{transform:`rotate(${(off+i*360/n+(rnd()-.5)*8).toFixed(1)}) translate(0 ${(-rr).toFixed(1)})`},c);
+        cup(p,ww,hh,fill,stroke);
       }
     };
-    ring(6,R*0.30,R*0.46,R*0.95,'url(#deepG)','#1A070C',8);   // back cups
-    ring(5,R*0.26,R*0.40,R*0.78,'url(#petalG)','#2A0D13',44);  // mid cups
-    ring(4,R*0.20,R*0.30,R*0.58,'url(#petalG)','#331019',20);  // inner cups
-    // throat shadow + glowing core
-    E('ellipse',{cx:0, cy:-R*0.34, rx:R*0.24, ry:R*0.19, fill:'#150608', opacity:.9},g);
-    E('ellipse',{cx:0, cy:-R*0.36, rx:R*0.16, ry:R*0.12, fill:'url(#coreG)'},g);
+    ring(6,R*0.30,R*0.46,R*0.95,'url(#deepG)','#1A070C',8);
+    ring(5,R*0.26,R*0.40,R*0.78,'url(#petalG)','#2A0D13',44);
+    ring(4,R*0.20,R*0.30,R*0.58,'url(#petalG)','#331019',20);
+    E('ellipse',{cx:0, cy:0, rx:R*0.24, ry:R*0.19, fill:'#150608', opacity:.92},c);
+    E('ellipse',{cx:0, cy:0, rx:R*0.155, ry:R*0.12, fill:'url(#coreG)'},c);
     let d=''; const turns=2.8, steps=52;
     for(let i=0;i<=steps;i++){
-      const t=i/steps, a=t*turns*2*Math.PI, r=R*0.02+t*R*0.11;
-      d+=(i?'L':'M')+(Math.cos(a)*r).toFixed(1)+' '+(-R*0.36+Math.sin(a)*r).toFixed(1);
+      const t=i/steps, a=t*turns*2*Math.PI, r=R*0.018+t*R*0.105;
+      d+=(i?'L':'M')+(Math.cos(a)*r).toFixed(1)+' '+(Math.sin(a)*r).toFixed(1);
     }
-    E('path',{d, fill:'none', stroke:'#E4A9B2','stroke-width':R*0.028,'stroke-linecap':'round', opacity:.9},g);
-    // dew on two outer petals
-    [[-R*0.5,-R*0.62],[R*0.55,-R*0.5]].forEach(([x,y])=>{
-      E('circle',{cx:x, cy:y, r:R*0.035, fill:'#EBC6CC', opacity:.55},g);
-      E('circle',{cx:x-R*0.012, cy:y-R*0.012, r:R*0.012, fill:'#fff', opacity:.8},g);
-    });
-    return g;
+    E('path',{d, fill:'none', stroke:'#EFB9C1','stroke-width':R*0.026,'stroke-linecap':'round', opacity:.92},c);
+    E('circle',{cx:-R*0.045, cy:-R*0.045, r:R*0.02, fill:'#fff', opacity:.85},c);
   }
   function leaf(parent,x,y,len,ang){
     const g=E('g',{transform:`translate(${x} ${y}) rotate(${ang})`},parent);
@@ -88,16 +73,23 @@
       E('path',{d:`M${px} 0 l ${len*0.12} ${-len*0.09} M${px} 0 l ${len*0.12} ${len*0.09}`,
         stroke:'#3A4A2C','stroke-width':1, opacity:.7},g);
     }
+  }
+  function G(){ return document.createElementNS(NS,'g'); }
+  // open bloom (no stem — it grows on a vine)
+  function bloom(R){
+    const g=G();
+    roseHeart(g,R);
+    [[-R*0.52,-R*0.96],[R*0.56,-R*0.84]].forEach(([x,y])=>{
+      E('circle',{cx:x, cy:y, r:R*0.034, fill:'#EBC6CC', opacity:.55},g);
+      E('circle',{cx:x-R*0.012, cy:y-R*0.012, r:R*0.012, fill:'#fff', opacity:.8},g);
+    });
     return g;
   }
   function bud(R){
-    const g=E('g',{class:'flw'});
-    E('path',{d:`M0 ${R} C ${R*0.15} ${R*1.8} ${-R*0.1} ${R*2.4} ${R*0.05} ${R*3}`,
-      fill:'none', stroke:'#2A3623','stroke-width':R*0.16,'stroke-linecap':'round'},g);
+    const g=G();
     for(let i=0;i<3;i++){
-      const a=(i*120+90);
       E('path',{d:`M0 ${R*0.5} Q ${R*0.5} ${R*1.1} ${R*0.2} ${R*1.7} Q 0 ${R*1.15} 0 ${R*0.5}`,
-        fill:'#22301E', transform:`rotate(${a})`},g);
+        fill:'#22301E', transform:`rotate(${i*120+90})`},g);
     }
     E('path',{d:`M0 ${-R} C ${R*0.75} ${-R*0.2} ${R*0.6} ${R*0.6} 0 ${R*0.9} `+
       `C ${-R*0.6} ${R*0.6} ${-R*0.75} ${-R*0.2} 0 ${-R} Z`,
@@ -106,23 +98,87 @@
       fill:'none', stroke:'#D89AA4','stroke-width':R*0.04, opacity:.6,'stroke-linecap':'round'},g);
     return g;
   }
-  // build-then-place (tilt baked in, sway via CSS on wrapper)
-  function bloom(kind,R,x,y,s,dur,tilt){
-    const g=(kind==='bud'?bud(R):rose(R));
-    const wrap=E('g',{transform:`translate(${x} ${y}) rotate(${tilt}) scale(${s})`});
-    wrap.appendChild(g);
-    wrap.setAttribute('class','flw-sway');
-    wrap.style.animationDuration=dur+'s';
-    root.appendChild(wrap);
+  // different flower for the ending: deep blush lily
+  function lily(R){
+    const g=G();
+    for(let i=0;i<6;i++){
+      const p=E('g',{transform:`rotate(${i*60+(rnd()-.5)*6}) translate(0 ${-R*0.12})`},g);
+      const w=R*0.30, h=R*0.95;
+      E('path',{d:`M0 0 C ${-w} ${-h*0.35} ${-w*0.62} ${-h*0.8} 0 ${-h} `+
+        `C ${w*0.62} ${-h*0.8} ${w} ${-h*0.35} 0 0 Z`,
+        fill:'url(#lilyG)', stroke:'#33101A','stroke-width':Math.max(1,R*0.014)},p);
+      for(let s=0;s<5;s++){
+        E('circle',{cx:(rnd()-.5)*w*0.9, cy:-h*(0.25+rnd()*0.5), r:R*0.016,
+          fill:'#4A1622', opacity:.65},p);
+      }
+    }
+    for(let i=0;i<5;i++){
+      const a=i*72+12, rad=a*Math.PI/180, x2=Math.cos(rad)*R*0.62, y2=Math.sin(rad)*R*0.62;
+      E('line',{x1:0, y1:0, x2:x2.toFixed(1), y2:y2.toFixed(1), stroke:'#D8C9A8','stroke-width':R*0.025,'stroke-linecap':'round'},g);
+      E('ellipse',{cx:x2.toFixed(1), cy:y2.toFixed(1), rx:R*0.05, ry:R*0.028, fill:'#8B4A2B',
+        transform:`rotate(${a} ${x2.toFixed(1)} ${y2.toFixed(1)})`},g);
+    }
+    E('circle',{cx:0, cy:0, r:R*0.06, fill:'#EBD9C8'},g);
+    return g;
   }
-  bloom('rose',150, 175, 300, 1, 9, -10);
-  bloom('rose',130, 1290, 430, 1, 11, 8);
-  bloom('rose',95, 205, 745, 0.95, 10, 5);
-  bloom('bud',34, 1130, 130, 1, 8, 12);
-  bloom('bud',30, 1235, 765, 1, 9, -8);
-  // trailing vine across the top
-  const v=E('g',{class:'flw-sway'}); v.style.animationDuration='12s'; root.appendChild(v);
-  E('path',{d:'M560 -10 C 700 50, 830 20, 960 55 C 1040 75, 1100 60, 1180 80',
-    fill:'none', stroke:'#2A3623','stroke-width':5,'stroke-linecap':'round'},v);
-  [[660,32,60,-15],[770,38,68,12],[880,48,62,-8],[985,62,70,10],[1090,66,58,-12]].forEach(([x,y,l,a])=>leaf(v,x,y,l,a));
+  function swayWrap(parent,x,y,tilt,s,dur){
+    const w=E('g',{transform:`translate(${x} ${y}) rotate(${tilt}) scale(${s})`, class:'flw-sway'},parent);
+    w.style.animationDuration=dur+'s';
+    return w;
+  }
+
+  // ---------- main field: two intertwining vines ----------
+  const svg=document.getElementById('flower-svg'), root=document.getElementById('flower-root');
+  if(svg&&root){
+    defsFor(svg,root);
+    // vine A: top-left → down → across
+    const vA=E('path',{d:'M-20 120 C 220 150, 330 330, 310 520 C 295 670, 380 760, 470 860',
+      fill:'none', stroke:'#2C3A24','stroke-width':6,'stroke-linecap':'round'},root);
+    // vine B: right → up, crossing A
+    const vB=E('path',{d:'M1460 640 C 1240 620, 1150 430, 1200 260 C 1230 150, 1130 90, 1060 30',
+      fill:'none', stroke:'#2C3A24','stroke-width':6,'stroke-linecap':'round'},root);
+    // leaves + blooms along the vines via real path geometry
+    [[vA,[0.08,0.22,0.36,0.5,0.64,0.78,0.9]],[vB,[0.1,0.25,0.4,0.55,0.7,0.85]]].forEach(([path,ts],vi)=>{
+      const L=path.getTotalLength();
+      ts.forEach((t,i)=>{
+        const p=path.getPointAtLength(t*L), q=path.getPointAtLength(Math.min(L,(t+0.01)*L));
+        const ang=Math.atan2(q.y-p.y,q.x-p.x)*180/Math.PI;
+        leaf(root,p.x,p.y,52+(i%3)*10,ang+(i%2?38:-38)+(vi?-14:0));
+      });
+    });
+    const La=vA.getTotalLength(), Lb=vB.getTotalLength();
+    const at=(path,L,t)=>{ const p=path.getPointAtLength(t*L); return [p.x,p.y]; };
+    // blooms grow out of vine A
+    let [ax1,ay1]=at(vA,La,0.30); swayWrap(root,ax1,ay1-40,-8,1,9).appendChild(bloom(105));
+    let [ax2,ay2]=at(vA,La,0.62); swayWrap(root,ax2,ay2-40,6,0.9,10).appendChild(bloom(88));
+    let [ax3,ay3]=at(vA,La,0.88); swayWrap(root,ax3+30,ay3-30,10,0.5,8).appendChild(bud(30));
+    // blooms grow out of vine B
+    let [bx1,by1]=at(vB,Lb,0.35); swayWrap(root,bx1,by1-40,8,0.95,11).appendChild(bloom(100));
+    let [bx2,by2]=at(vB,Lb,0.72); swayWrap(root,bx2,by2-40,-10,0.55,9).appendChild(bud(32));
+    // trailing shoot across the top
+    const vT=E('path',{d:'M560 -10 C 700 50, 830 20, 960 55 C 1040 75, 1100 60, 1180 80',
+      fill:'none', stroke:'#2A3623','stroke-width':5,'stroke-linecap':'round'},root);
+    const Lt=vT.getTotalLength();
+    [0.15,0.38,0.6,0.82].forEach((t,i)=>{
+      const p=vT.getPointAtLength(t*Lt);
+      leaf(root,p.x,p.y,56+(i%2)*10,i%2?14:-12);
+    });
+  }
+
+  // ---------- ending: a row of different flowers ----------
+  const esvg=document.getElementById('end-svg'), eroot=document.getElementById('end-root');
+  if(esvg&&eroot){
+    defsFor(esvg,eroot);
+    E('path',{d:'M-20 290 C 300 250, 600 300, 900 265 C 1100 245, 1280 270, 1460 250',
+      fill:'none', stroke:'#2C3A24','stroke-width':5,'stroke-linecap':'round'},eroot);
+    [[380,215,82],[720,185,96],[1060,220,78]].forEach(([x,y,R],i)=>{
+      const w=swayWrap(eroot,x,y,(i-1)*6,1,8+i*1.5);
+      E('path',{d:`M0 40 C 6 90, -4 120, 2 160`, stroke:'#2A3623','stroke-width':6,
+        fill:'none','stroke-linecap':'round'},w);
+      const b=G(); w.appendChild(b); b.appendChild(lily(R));
+      leaf(w,-26,96,52,-32); leaf(w,26,110,48,30);
+    });
+    const wb=swayWrap(eroot,180,250,10,0.8,7); wb.appendChild(bud(26));
+    const wb2=swayWrap(eroot,1260,245,-12,0.8,8); wb2.appendChild(bud(26));
+  }
 })();

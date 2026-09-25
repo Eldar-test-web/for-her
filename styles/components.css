@@ -45,6 +45,10 @@
 .smoke{width:2px;height:34px;margin:0 auto;background:linear-gradient(180deg,rgba(217,206,200,.6),transparent);opacity:0;filter:blur(2px)}
 .smoke.show{opacity:1;transform:translateY(-6px);transition:all 1.8s}
 .cake-shadow{position:absolute;bottom:8px;left:50%;width:240px;height:22px;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(0,0,0,.6),transparent 70%)}
+.tier .dots{position:absolute;left:14px;right:14px;bottom:12px;height:6px;
+  background-image:radial-gradient(circle,rgba(201,168,122,.75) 1.6px,transparent 1.8px);
+  background-size:15px 6px;background-repeat:repeat-x}
+.cake-bloom{position:absolute;bottom:196px;left:50%;width:44px;margin-left:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 .wish-line{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--t2);opacity:.55}
 .wish-line.kept{color:var(--t0);opacity:1;transition:all 2s}
 @media (prefers-reduced-motion:reduce){.flame{animation:none}.bloom-rings{animation:none}#intro-veil{transition:none}}

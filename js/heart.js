@@ -77,7 +77,7 @@ function build(canvas, { finalMode=false }={}){
   let minX=9,maxX=-9,minY=9,maxY=-9;
   outline.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);});
   const DEPTH=0.8;
-  const N = isMobile? {front:520, rim:380, back:200} : {front:1700, rim:1500, back:600};
+  const N = isMobile? {front:320, side:700, back:180} : {front:800, side:1900, back:450};
 
   function facePoints(n, z, dir){
     const pts=[]; let guard=0;
@@ -96,42 +96,48 @@ function build(canvas, { finalMode=false }={}){
     }
     return pts;
   }
-  // rim: words run along the edge, facing outward — the heart's profile.
+  // side walls: the full depth of the heart, tiled with I LOVE YOU.
   // outward = away from the shape centroid (robust to winding direction)
-  function rimPoints(n){
-    const pts=[]; const layers=5;
+  function sidePoints(){
+    const pts=[]; const layers=isMobile?4:6;
     let cx=0, cy=0; outline.forEach(p=>{cx+=p[0];cy+=p[1];}); cx/=outline.length; cy/=outline.length;
-    for(let i=0;i<n;i++){
-      const o=outline[(rand()*outline.length)|0];
+    const step=isMobile?4:2;
+    for(let i=0;i<outline.length;i+=step){
+      const o=outline[i];
       let nx=o[0]-cx, ny=(o[1]-cy);
       const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
-      let tx=-ny, ty=nx; // tangent along the edge
-      const z=-DEPTH + (i%layers)/(layers-1)*DEPTH*2;
-      pts.push({p:[o[0]+nx*0.02, o[1]+ny*0.02, z], t:[tx,ty], n:[nx,ny,0]});
+      const tx=-ny, ty=nx; // words run along the edge
+      for(let L=0;L<layers;L++){
+        const z=-DEPTH+(L+0.5)/layers*DEPTH*2;
+        pts.push({p:[o[0]+nx*0.03, o[1]+0.1+ny*0.03, z], t:[tx,ty], n:[nx,ny,0]});
+      }
     }
     return pts;
   }
 
   const front=facePoints(N.front, DEPTH, 1);
   const back=facePoints(N.back, -DEPTH, -1);
-  const rimPts=rimPoints(N.rim);
+  const sideAll=sidePoints(); // stride evenly so no stretch of wall stays bare
+  const sides=sideAll.filter((_,i)=>i%Math.max(1,Math.round(sideAll.length/N.side))===0);
 
   const texPhrase=wordTexture('I LOVE YOU', 108);
-  const texLove=wordTexture('LOVE', 132);
-  const texYou=wordTexture('YOU', 132);
 
   const M=new THREE.Matrix4();
   const bx=new THREE.Vector3(), by=new THREE.Vector3(), bz=new THREE.Vector3(), P=new THREE.Vector3();
-  const ivory=new THREE.Color(0xf3ece6), rose=new THREE.Color(0x8a5a62), champ=new THREE.Color(0xc8b399);
+  const ivory=new THREE.Color(0xf7f0e8), rose=new THREE.Color(0x8a5a62),
+        champ=new THREE.Color(0xe3c9a0), blush=new THREE.Color(0xd08a94);
   const cc=new THREE.Color();
 
+  // colour-coded words: mostly bright ivory, some champagne, some blush —
+  // neighbours differ, so single words can be picked out
   function shade(k, facing){
-    if(facing>=0) cc.copy(rose).lerp(ivory,0.75);
+    if(facing>=0) cc.copy(rose).lerp(ivory,0.85);
     else cc.copy(rose).multiplyScalar(0.7);
-    if(k%8===0) cc.lerp(champ,0.5);
+    if(k%7===3) cc.copy(champ);
+    else if(k%11===5) cc.copy(blush);
     return cc;
   }
-  function fillFace(geo, mat, list, w, h, dir, accentEvery=0, accentW=0){
+  function fillFace(geo, mat, list, w, h, dir){
     const m=new THREE.InstancedMesh(geo,mat,list.length);
     list.forEach((s,k)=>{
       bz.set(s.n[0],s.n[1],s.n[2]).normalize();
@@ -142,8 +148,7 @@ function build(canvas, { finalMode=false }={}){
       const tilt=(rand()-.5)*0.1, c=Math.cos(tilt), si=Math.sin(tilt);
       const ax=bx.clone().multiplyScalar(c).addScaledVector(by,si);
       const ay=by.clone().multiplyScalar(c).addScaledVector(bx,-si);
-      const isAccent=accentEvery&&k%accentEvery===0;
-      const sc=0.85+rand()*0.4, ww=(isAccent?accentW:w)*sc, hh=h*sc*(isAccent?1.35:1);
+      const sc=0.9+rand()*0.3, ww=w*sc, hh=h*sc;
       P.set(...s.p);
       M.makeBasis(ax.multiplyScalar(ww), ay.multiplyScalar(hh), bz);
       M.setPosition(P);
@@ -156,15 +161,15 @@ function build(canvas, { finalMode=false }={}){
     group.add(m);
     return m;
   }
-  function fillRim(geo, mat, list, w, h, texKind){
+  function fillRim(geo, mat, list, w, h){
     const m=new THREE.InstancedMesh(geo,mat,list.length);
     list.forEach((s,k)=>{
       bz.set(s.n[0],s.n[1],s.n[2]).normalize();
       bx.set(s.t[0],s.t[1],0); // words run along the edge
       by.set(0,0,1);
-      // keep rim words upright-ish: flip when running right-to-left underneath
+      // keep side words reading left-to-right wherever possible
       if(bx.x<0) bx.multiplyScalar(-1);
-      const sc=0.8+rand()*0.35;
+      const sc=0.9+rand()*0.25;
       P.set(...s.p);
       M.makeBasis(bx.multiplyScalar(w*sc), by.multiplyScalar(h*sc), bz);
       M.setPosition(P);
@@ -181,16 +186,10 @@ function build(canvas, { finalMode=false }={}){
   const matOpts={ roughness:0.82, metalness:0.0, alphaTest:0.3, side:THREE.DoubleSide,
     emissive:0xffffff, emissiveIntensity:0.42 }; // letters stay readable in shadow
   function stdMat(tex){ return new THREE.MeshStandardMaterial({...matOpts, map:tex, emissiveMap:tex}); }
-  // front: dense field of I LOVE YOU with larger LOVE accents
-  const nF=front.length, nAcc=Math.round(nF*0.14);
-  const frontMain=front.slice(nAcc), frontAcc=front.slice(0,nAcc);
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), frontMain, 0.60, 0.113, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texLove), frontAcc, 0.50, 0.094, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.60, 0.113, -1);
-  // rim: LOVE / YOU alternating around the profile
-  const rimL1=rimPts.filter((_,i)=>i%2===0), rimL2=rimPts.filter((_,i)=>i%2!==0);
-  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texLove), rimL1, 0.40, 0.075);
-  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texYou), rimL2, 0.37, 0.069);
+  // faces + full side walls — everything reads I LOVE YOU
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), front, 0.62, 0.117, 1);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.62, 0.117, -1);
+  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), sides, 0.34, 0.075);
 
   // golden micro-dust suspended inside the heart — fills the gaps between words
   let dust=null;

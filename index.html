@@ -120,10 +120,15 @@
     <div class="cake" role="img" aria-label="A minimal ivory cake on a dark plate with a single candle">
       <div class="flame-wrap"><div class="flame" id="flame"></div><div class="smoke" id="smoke"></div></div>
       <div class="candle"></div><div class="plate"></div>
-      <div class="tier tier-top"></div><div class="tier tier-mid"></div><div class="tier tier-base"></div>
+      <div class="tier tier-top"><span class="dots"></span></div>
+      <div class="tier tier-mid"><span class="dots"></span></div>
+      <div class="tier tier-base"><span class="dots"></span></div>
+      <svg class="cake-bloom" viewBox="-30 -30 60 60" aria-hidden="true">
+        <g><ellipse cx="0" cy="-13" rx="7" ry="12" fill="#7A2E3E"/><ellipse cx="12" cy="-4" rx="7" ry="12" fill="#7A2E3E" transform="rotate(72 12 -4)"/><ellipse cx="8" cy="11" rx="7" ry="12" fill="#63273A" transform="rotate(144 8 11)"/><ellipse cx="-8" cy="11" rx="7" ry="12" fill="#63273A" transform="rotate(216 -8 11)"/><ellipse cx="-12" cy="-4" rx="7" ry="12" fill="#7A2E3E" transform="rotate(288 -12 -4)"/><circle r="5" fill="#C9A87A"/></g>
+      </svg>
       <div class="cake-shadow"></div>
     </div>
-    <p class="wish-line" id="wish-line">Some wishes are meant to be kept.</p>
+    <p class="wish-line" id="wish-line">My love, you are the one I want — you always were.</p>
   </div>
 </section>
 
@@ -172,7 +177,8 @@
 </section>
 
 <!-- the very bottom: a field of dark lilies -->
-<footer id="lily-end" aria-label="A field of dark red lilies">
+<footer id="lily-end" aria-label="A row of lilies">
+  <svg id="end-svg" viewBox="0 0 1440 340" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g id="end-root"></g></svg>
   <p class="colophon">made quietly, for you — <span id="year"></span> · <a href="#beginning" id="to-top">back to the beginning</a></p>
   <!-- photography: Unsplash artists, used under the Unsplash License -->
 </footer>

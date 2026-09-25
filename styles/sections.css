@@ -86,6 +86,7 @@ h2.huge{font-size:clamp(3.2rem,9vw,6rem);margin:.4em 0}
 #lily-end::before{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,var(--bg0) 0%,rgba(10,8,9,.55) 30%,rgba(10,8,9,.15) 60%,rgba(10,8,9,.55) 100%)}
 #lily-end .colophon{position:relative;margin:0;text-align:center}
+#end-svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:min(38vh,300px)}
 @media (max-width:720px){
   .thought.align-left,.thought.align-right{max-width:none}
   #before-you-go .letter{border-left:none;padding-left:0;border-top:1px solid rgba(201,168,122,.3);padding-top:28px}
