@@ -76,8 +76,8 @@ function build(canvas, { finalMode=false }={}){
   const outline=heartOutline();
   let minX=9,maxX=-9,minY=9,maxY=-9;
   outline.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);});
-  const DEPTH=1.0; // true volumetric solid: domed faces + full walls + inner body
-  const N = isMobile? {front:300, wall:450, back:170, fill:250} : {front:700, wall:1200, back:400, fill:800};
+  const DEPTH=1.0; // inner body only: a solid cloud of words, no outer shell
+  const N = isMobile? {front:0, back:0, fill:600} : {front:0, back:0, fill:2600};
 
   function facePoints(n, z, dir){
     const pts=[]; let guard=0;
@@ -151,11 +151,10 @@ function build(canvas, { finalMode=false }={}){
   // colour-coded words: mostly bright ivory, some champagne, some blush —
   // neighbours differ, so single words can be picked out
   function shade(k, facing, inner){
-    if(inner){ cc.setHex(0x6e3a44); return cc; }
-    if(facing>=0) cc.copy(rose).lerp(ivory,0.85);
-    else cc.copy(rose).multiplyScalar(0.7);
+    cc.copy(rose).lerp(ivory,0.85);
     if(k%7===3) cc.copy(champ);
     else if(k%11===5) cc.copy(blush);
+    else if(facing<0) cc.multiplyScalar(0.75);
     return cc;
   }
   function fillFace(geo, mat, list, w, h, dir){
@@ -207,10 +206,10 @@ function build(canvas, { finalMode=false }={}){
   const matOpts={ roughness:0.82, metalness:0.0, alphaTest:0.3, side:THREE.DoubleSide,
     emissive:0xffffff, emissiveIntensity:0.42 }; // letters stay readable in shadow
   function stdMat(tex){ return new THREE.MeshStandardMaterial({...matOpts, map:tex, emissiveMap:tex}); }
-  // faces + inner body only (outer walls off for now) — everything reads I LOVE YOU
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), front, 0.62, 0.117, 1);
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.62, 0.117, -1);
-  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), filler, 0.5, 0.094, 0);
+  // inner body only — the whole heart is the cloud itself, everything reads I LOVE YOU
+  if(front.length) fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), front, 0.62, 0.117, 1);
+  if(back.length) fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.62, 0.117, -1);
+  fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), filler, 0.55, 0.104, 0);
 
   // golden micro-dust suspended inside the heart — fills the gaps between words
   let dust=null;

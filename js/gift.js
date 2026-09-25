@@ -19,12 +19,14 @@
     if(units.length && units.every(u=>u.dataset.out==='1')) line?.classList.add('kept');
   }
   units.forEach(u=>{
-    const fl=u.querySelector('.flame'), sm=u.querySelector('.smoke'), ha=u.querySelector('.halo');
+    const fl=u.querySelector('.flame'), sm=u.querySelector('.smoke'),
+          ha=u.querySelector('.halo'), ca=u.querySelector('.candle');
     function out(){
       if(!fl || u.dataset.out==='1') return;
       u.dataset.out='1';
       fl.classList.add('out'); sm?.classList.add('show');
-      if(ha) ha.style.opacity='0'; // its light goes with it — no exceptions
+      if(ha) ha.style.opacity='0'; // halo gone
+      if(ca) ca.style.boxShadow='none'; // candle's own glow gone too
       try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}
       checkAll();
     }

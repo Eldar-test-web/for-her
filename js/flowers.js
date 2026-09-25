@@ -121,6 +121,43 @@
     E('circle',{cx:0, cy:0, r:R*0.06, fill:'#EBD9C8'},g);
     return g;
   }
+  // second flower type for the ending: loose blush peony
+  function peony(R){
+    const g=G();
+    const layer=(n,rr,wr,hr,off)=>{
+      for(let i=0;i<n;i++){
+        const p=E('g',{transform:`rotate(${(off+i*360/n+(rnd()-.5)*10).toFixed(1)}) translate(0 ${(-rr).toFixed(1)})`},g);
+        E('ellipse',{cx:0, cy:-hr*0.4, rx:wr, ry:hr, fill:'url(#petalG)',
+          stroke:'#2A0D13','stroke-width':Math.max(1,R*0.012)},p);
+      }
+    };
+    layer(9,R*0.42,R*0.30,R*0.44,5);
+    layer(7,R*0.30,R*0.26,R*0.38,30);
+    layer(5,R*0.18,R*0.20,R*0.30,12);
+    for(let i=0;i<12;i++){
+      const a=rnd()*Math.PI*2, r=rnd()*R*0.14;
+      E('circle',{cx:(Math.cos(a)*r).toFixed(1), cy:(-R*0.1+Math.sin(a)*r).toFixed(1),
+        r:R*0.028, fill:'#E3C9A0'},g);
+    }
+    E('circle',{cx:0, cy:-R*0.1, r:R*0.05, fill:'#7E2F3F'},g);
+    return g;
+  }
+  // tiny blossom sprig
+  function sprig(len){
+    const g=G();
+    E('path',{d:`M0 0 Q 6 ${-len*0.5} 0 ${-len}`, fill:'none',
+      stroke:'#2E3D26','stroke-width':2.5,'stroke-linecap':'round'},g);
+    [[0.35,-1],[0.55,1],[0.75,-1],[1,0]].forEach(([t,s])=>{
+      const bx=s*8, by=-len*t;
+      for(let i=0;i<5;i++){
+        const a=i*72;
+        E('circle',{cx:(bx+Math.cos(a*Math.PI/180)*4.5).toFixed(1),
+          cy:(by+Math.sin(a*Math.PI/180)*4.5).toFixed(1), r:3.4, fill:'#8B3A48'},g);
+      }
+      E('circle',{cx:bx, cy:by, r:2.6, fill:'#E3C9A0'},g);
+    });
+    return g;
+  }
   function swayWrap(parent,x,y,tilt,s,dur){
     const w=E('g',{transform:`translate(${x} ${y}) rotate(${tilt}) scale(${s})`, class:'flw-sway'},parent);
     w.style.animationDuration=dur+'s';
@@ -153,7 +190,6 @@
     let [ax2,ay2]=at(vA,La,0.45); swayWrap(root,ax2+42,ay2-38,14,0.9,10).appendChild(bloom(88));
     let [ax4,ay4]=at(vA,La,0.58); swayWrap(root,ax4-40,ay4-30,-6,0.7,7).appendChild(bloom(66));
     let [ax3,ay3]=at(vA,La,0.82); swayWrap(root,ax3+34,ay3-34,24,0.5,8).appendChild(bud(30));
-    let [ax5,ay5]=at(vA,La,0.95); swayWrap(root,ax5-28,ay5-20,-32,0.42,11).appendChild(bud(24));
     // blooms grow out of vine B
     let [bx1,by1]=at(vB,Lb,0.28); swayWrap(root,bx1+44,by1-40,18,1,11).appendChild(bloom(104));
     let [bx3,by3]=at(vB,Lb,0.52); swayWrap(root,bx3-42,by3-36,-14,0.75,9).appendChild(bloom(72));
@@ -169,23 +205,32 @@
     });
     const pc=vC.getPointAtLength(0.85*Lc);
     swayWrap(root,pc.x-10,pc.y-40,12,0.8,8).appendChild(bloom(78));
-    // a fourth vine along the bottom, heavy with blooms
-    const vD=E('path',{d:'M-20 830 C 200 790, 380 860, 600 830 C 820 800, 980 865, 1200 835 C 1300 822, 1380 830, 1460 815',
-      fill:'none', stroke:'#2C3A24','stroke-width':6,'stroke-linecap':'round'},root);
-    const Ld=vD.getTotalLength();
-    [0.12,0.3,0.48,0.66,0.84].forEach((t,i)=>{
-      const p=vD.getPointAtLength(t*Ld);
-      leaf(root,p.x,p.y,54,i%2?30:-28);
-    });
-    const atD=(t)=>{ const p=vD.getPointAtLength(t*Ld); return [p.x,p.y]; };
-    let [dx1,dy1]=atD(0.18); swayWrap(root,dx1,dy1-42,-16,0.95,9).appendChild(bloom(96));
-    let [dx2,dy2]=atD(0.42); swayWrap(root,dx2,dy2-40,10,0.8,10).appendChild(bloom(72));
-    let [dx3,dy3]=atD(0.63); swayWrap(root,dx3,dy3-42,-8,0.9,8).appendChild(bloom(86));
-    let [dx4,dy4]=atD(0.82); swayWrap(root,dx4,dy4-38,20,0.55,11).appendChild(bud(28));
-    let [dx5,dy5]=atD(0.30); swayWrap(root,dx5+44,dy5-24,26,0.45,7).appendChild(bud(24));
     // extra blooms on the tall vines
     let [ax6,ay6]=at(vA,La,0.08); swayWrap(root,ax6+40,ay6-36,20,0.6,10).appendChild(bloom(64));
     let [bx5,by5]=at(vB,Lb,0.55); swayWrap(root,bx5-40,by5-30,-20,0.6,8).appendChild(bloom(62));
+    // vine E: hanging from the top, right of centre
+    const vE=E('path',{d:'M900 -20 C 880 140, 950 280, 920 430 C 905 520, 940 590, 925 660',
+      fill:'none', stroke:'#2C3A24','stroke-width':5,'stroke-linecap':'round'},root);
+    const Le=vE.getTotalLength();
+    [0.25,0.5,0.75].forEach((t,i)=>{
+      const p=vE.getPointAtLength(t*Le);
+      leaf(root,p.x,p.y,50,i%2?30:-28);
+    });
+    const atE=(t)=>{ const p=vE.getPointAtLength(t*Le); return [p.x,p.y]; };
+    let [ex1,ey1]=atE(0.38); swayWrap(root,ex1-42,ey1-36,-18,0.85,9).appendChild(bloom(84));
+    let [ex2,ey2]=atE(0.68); swayWrap(root,ex2+40,ey2-32,16,0.7,10).appendChild(bloom(68));
+    let [ex3,ey3]=atE(0.90); swayWrap(root,ex3-6,ey3-26,-6,0.5,8).appendChild(bud(26));
+    // vine F: left diagonal
+    const vF=E('path',{d:'M-20 380 C 140 400, 260 320, 400 360 C 470 378, 530 360, 600 375',
+      fill:'none', stroke:'#2C3A24','stroke-width':5,'stroke-linecap':'round'},root);
+    const Lf=vF.getTotalLength();
+    [0.3,0.65].forEach((t,i)=>{
+      const p=vF.getPointAtLength(t*Lf);
+      leaf(root,p.x,p.y,52,i?32:-30);
+    });
+    const atF=(t)=>{ const p=vF.getPointAtLength(t*Lf); return [p.x,p.y]; };
+    let [fx1,fy1]=atF(0.45); swayWrap(root,fx1,fy1-40,22,0.8,11).appendChild(bloom(76));
+    let [fx2,fy2]=atF(0.80); swayWrap(root,fx2+30,fy2-28,-20,0.5,9).appendChild(bud(26));
     // trailing shoot across the top
     const vT=E('path',{d:'M560 -10 C 700 50, 830 20, 960 55 C 1040 75, 1100 60, 1180 80',
       fill:'none', stroke:'#2A3623','stroke-width':5,'stroke-linecap':'round'},root);
@@ -196,18 +241,33 @@
     });
   }
 
-  // ---------- ending: a row of different flowers ----------
+  // ---------- ending: intertwined vines, three kinds of flowers ----------
   const esvg=document.getElementById('end-svg'), eroot=document.getElementById('end-root');
   if(esvg&&eroot){
     defsFor(esvg,eroot);
     E('path',{d:'M-20 290 C 300 250, 600 300, 900 265 C 1100 245, 1280 270, 1460 250',
       fill:'none', stroke:'#2C3A24','stroke-width':5,'stroke-linecap':'round'},eroot);
+    E('path',{d:'M-20 310 C 250 275, 550 315, 850 280 C 1050 260, 1250 290, 1460 270',
+      fill:'none', stroke:'#26331F','stroke-width':3.5,'stroke-linecap':'round'},eroot);
     [[180,225,74,-14],[420,195,88,8],[640,175,94,-4],[880,185,86,12],[1100,200,80,16],[1300,225,70,-18]].forEach(([x,y,R,tilt],i)=>{
       const w=swayWrap(eroot,x,y,tilt,1,8+i*1.1);
       E('path',{d:`M0 40 C 6 90, -4 120, 2 160`, stroke:'#2A3623','stroke-width':6,
         fill:'none','stroke-linecap':'round'},w);
       const b=G(); w.appendChild(b); b.appendChild(lily(R));
       leaf(w,-26,96,52,-32); leaf(w,26,110,48,30);
+    });
+    // blush peonies between the lilies
+    [[530,240,56,10],[970,235,60,-12]].forEach(([x,y,R,tilt],i)=>{
+      const w=swayWrap(eroot,x,y,tilt,1,9+i*1.4);
+      E('path',{d:`M0 30 C -4 70, 4 100, 0 130`, stroke:'#2A3623','stroke-width':5,
+        fill:'none','stroke-linecap':'round'},w);
+      const b=G(); w.appendChild(b); b.appendChild(peony(R));
+      leaf(w,-22,80,46,-30); leaf(w,22,92,42,28);
+    });
+    // blossom sprigs rising between
+    [[300,290,90,-8],[750,295,100,6],[1200,290,92,10]].forEach(([x,y,s,tilt],i)=>{
+      const w=swayWrap(eroot,x,y,tilt,1,7+i);
+      w.appendChild(sprig(s));
     });
     const wb=swayWrap(eroot,120,255,16,0.8,7); wb.appendChild(bud(26));
     const wb2=swayWrap(eroot,1360,250,-16,0.8,8); wb2.appendChild(bud(26));
