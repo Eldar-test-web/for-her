@@ -159,7 +159,7 @@
     let [bx3,by3]=at(vB,Lb,0.52); swayWrap(root,bx3-42,by3-36,-14,0.75,9).appendChild(bloom(72));
     let [bx2,by2]=at(vB,Lb,0.74); swayWrap(root,bx2+30,by2-30,30,0.55,9).appendChild(bud(32));
     let [bx4,by4]=at(vB,Lb,0.90); swayWrap(root,bx4-24,by4-24,-26,0.45,10).appendChild(bud(24));
-    // a third short shoot, bottom-right
+    // a third shoot, bottom-right
     const vC=E('path',{d:'M1470 905 C 1360 880, 1310 800, 1330 720',
       fill:'none', stroke:'#2C3A24','stroke-width':5,'stroke-linecap':'round'},root);
     const Lc=vC.getTotalLength();
@@ -169,6 +169,23 @@
     });
     const pc=vC.getPointAtLength(0.85*Lc);
     swayWrap(root,pc.x-10,pc.y-40,12,0.8,8).appendChild(bloom(78));
+    // a fourth vine along the bottom, heavy with blooms
+    const vD=E('path',{d:'M-20 830 C 200 790, 380 860, 600 830 C 820 800, 980 865, 1200 835 C 1300 822, 1380 830, 1460 815',
+      fill:'none', stroke:'#2C3A24','stroke-width':6,'stroke-linecap':'round'},root);
+    const Ld=vD.getTotalLength();
+    [0.12,0.3,0.48,0.66,0.84].forEach((t,i)=>{
+      const p=vD.getPointAtLength(t*Ld);
+      leaf(root,p.x,p.y,54,i%2?30:-28);
+    });
+    const atD=(t)=>{ const p=vD.getPointAtLength(t*Ld); return [p.x,p.y]; };
+    let [dx1,dy1]=atD(0.18); swayWrap(root,dx1,dy1-42,-16,0.95,9).appendChild(bloom(96));
+    let [dx2,dy2]=atD(0.42); swayWrap(root,dx2,dy2-40,10,0.8,10).appendChild(bloom(72));
+    let [dx3,dy3]=atD(0.63); swayWrap(root,dx3,dy3-42,-8,0.9,8).appendChild(bloom(86));
+    let [dx4,dy4]=atD(0.82); swayWrap(root,dx4,dy4-38,20,0.55,11).appendChild(bud(28));
+    let [dx5,dy5]=atD(0.30); swayWrap(root,dx5+44,dy5-24,26,0.45,7).appendChild(bud(24));
+    // extra blooms on the tall vines
+    let [ax6,ay6]=at(vA,La,0.08); swayWrap(root,ax6+40,ay6-36,20,0.6,10).appendChild(bloom(64));
+    let [bx5,by5]=at(vB,Lb,0.55); swayWrap(root,bx5-40,by5-30,-20,0.6,8).appendChild(bloom(62));
     // trailing shoot across the top
     const vT=E('path',{d:'M560 -10 C 700 50, 830 20, 960 55 C 1040 75, 1100 60, 1180 80',
       fill:'none', stroke:'#2A3623','stroke-width':5,'stroke-linecap':'round'},root);
@@ -185,8 +202,8 @@
     defsFor(esvg,eroot);
     E('path',{d:'M-20 290 C 300 250, 600 300, 900 265 C 1100 245, 1280 270, 1460 250',
       fill:'none', stroke:'#2C3A24','stroke-width':5,'stroke-linecap':'round'},eroot);
-    [[300,225,74,-14],[560,195,88,8],[810,175,94,-4],[1050,200,80,16],[1290,225,70,-18]].forEach(([x,y,R,tilt],i)=>{
-      const w=swayWrap(eroot,x,y,tilt,1,8+i*1.3);
+    [[180,225,74,-14],[420,195,88,8],[640,175,94,-4],[880,185,86,12],[1100,200,80,16],[1300,225,70,-18]].forEach(([x,y,R,tilt],i)=>{
+      const w=swayWrap(eroot,x,y,tilt,1,8+i*1.1);
       E('path',{d:`M0 40 C 6 90, -4 120, 2 160`, stroke:'#2A3623','stroke-width':6,
         fill:'none','stroke-linecap':'round'},w);
       const b=G(); w.appendChild(b); b.appendChild(lily(R));

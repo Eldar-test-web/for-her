@@ -137,8 +137,7 @@ function build(canvas, { finalMode=false }={}){
 
   const front=facePoints(N.front, DEPTH, 1);
   const back=facePoints(N.back, -DEPTH, -1);
-  const wallsAll=wallPoints();
-  const walls=wallsAll.filter((_,i)=>i%Math.max(1,Math.round(wallsAll.length/N.wall))===0);
+  // outer walls off for now — wallPoints() stays ready if they return
   const filler=fillerPoints(N.fill);
 
   const texPhrase=wordTexture('I LOVE YOU', 108);
@@ -208,10 +207,9 @@ function build(canvas, { finalMode=false }={}){
   const matOpts={ roughness:0.82, metalness:0.0, alphaTest:0.3, side:THREE.DoubleSide,
     emissive:0xffffff, emissiveIntensity:0.42 }; // letters stay readable in shadow
   function stdMat(tex){ return new THREE.MeshStandardMaterial({...matOpts, map:tex, emissiveMap:tex}); }
-  // closed solid, everything reads I LOVE YOU: faces + walls + inner body
+  // faces + inner body only (outer walls off for now) — everything reads I LOVE YOU
   fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), front, 0.62, 0.117, 1);
   fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), back, 0.62, 0.117, -1);
-  fillRim(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), walls, 0.44, 0.11);
   fillFace(new THREE.PlaneGeometry(1,1), stdMat(texPhrase), filler, 0.5, 0.094, 0);
 
   // golden micro-dust suspended inside the heart — fills the gaps between words

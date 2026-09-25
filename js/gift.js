@@ -19,11 +19,12 @@
     if(units.length && units.every(u=>u.dataset.out==='1')) line?.classList.add('kept');
   }
   units.forEach(u=>{
-    const fl=u.querySelector('.flame'), sm=u.querySelector('.smoke');
+    const fl=u.querySelector('.flame'), sm=u.querySelector('.smoke'), ha=u.querySelector('.halo');
     function out(){
       if(!fl || u.dataset.out==='1') return;
       u.dataset.out='1';
       fl.classList.add('out'); sm?.classList.add('show');
+      if(ha) ha.style.opacity='0'; // its light goes with it — no exceptions
       try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}
       checkAll();
     }
